@@ -7,7 +7,7 @@ import Drag from '@dojo/widget-core/meta/Drag';
 import Matches from '@dojo/widget-core/meta/Matches';
 import { theme, ThemedMixin, ThemedProperties } from '@dojo/widget-core/mixins/Themed';
 import { Keys } from '@dojo/widgets/common/util';
-import ScrollBar from './ScrollBar';
+import Scrollbar from './Scrollbar';
 import * as css from './styles/treepane.m.css';
 import * as iconCss from './styles/icons.m.css';
 
@@ -559,7 +559,7 @@ export default class TreePane extends ThemedBase<TreePaneProperties> {
 				onkeydown: this._onkeydown,
 				onwheel: this._onwheel
 			}, rows),
-			w(ScrollBar, {
+			w(Scrollbar, {
 				position: _scrollPosition,
 				size,
 				sliderSize,
