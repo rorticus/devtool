@@ -7,3 +7,4 @@ install:
 - npm install
 script:
 - dojo test
+- ./node_modules/.bin/codecov

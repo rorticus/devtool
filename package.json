@@ -35,6 +35,7 @@
     "@dojo/widget-core": "~0.3.0",
     "@dojo/widgets": "^0.2.2",
     "@types/chrome": "0.0.54",
+    "codecov": "^3.0.0",
     "intern": "^4.1.0",
     "moment": "^2.19.2",
     "tslib": "~1.8.0",
