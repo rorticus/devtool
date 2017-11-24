@@ -1,0 +1,44 @@
+{
+  "name": "@dojo/devtool",
+  "version": "0.0.1",
+  "description": "A development tool extension for Dojo 2",
+  "main": "index.js",
+  "scripts": {
+    "test": "intern"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dojo/devtool.git"
+  },
+  "keywords": [
+    "Dev",
+    "Tool",
+    "Chrome",
+    "Extensions",
+    "Dojo2"
+  ],
+  "author": "Kitson P. Kelly <kitsonk@dojotoolkit.org>",
+  "license": "BSD-3-Clause",
+  "bugs": {
+    "url": "https://github.com/dojo/devtool/issues"
+  },
+  "homepage": "https://github.com/dojo/devtool#readme",
+  "devDependencies": {
+    "@dojo/cli-build-webpack": "^0.2.1",
+    "@dojo/cli-test-intern": "^0.2.0",
+    "@dojo/core": "~0.2.1",
+    "@dojo/diagnostics": "file:deps/dojo-diagnostics-0.1.0-rc.1.tgz",
+    "@dojo/has": "~0.1.0",
+    "@dojo/i18n": "~0.2.0",
+    "@dojo/shim": "~0.2.2",
+    "@dojo/test-extras": "~0.2.0",
+    "@dojo/widget-core": "~0.3.0",
+    "@dojo/widgets": "^0.2.2",
+    "@types/chrome": "0.0.54",
+    "intern": "^4.1.0",
+    "moment": "^2.19.2",
+    "tslib": "~1.8.0",
+    "tslint": "^5.8.0",
+    "typescript": "~2.6.1"
+  }
+}

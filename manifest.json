@@ -1,0 +1,15 @@
+{
+	"manifest_version": 2,
+	"name": "Dojo 2 DevTools",
+	"description": "A development tool extension for Dojo 2",
+	"version": "0.0.1",
+	"devtools_page": "devtools.html",
+	"icons": {
+		"32": "devtool.png"
+	},
+	"permissions": [
+		"tabs",
+		"http://*/*",
+		"https://*/*"
+	]
+}

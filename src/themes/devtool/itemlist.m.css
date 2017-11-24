@@ -1,0 +1,50 @@
+@import './variables.css';
+
+.root {
+	list-style-type: none;
+	margin: 0;
+	padding: 0;
+}
+
+.empty {
+	align-items: center;
+	color: var(--color-text-faded);
+	display: flex;
+	justify-content: center;
+}
+
+.empty > p {
+	padding: var(--spacing-regular);
+	margin: 0;
+}
+
+.item {
+	font-size: 11px;
+	font-family: Menlo, monospace;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	display: flex;
+	align-items: center;
+}
+
+.item:nth-child(even) {
+	background-color: var(--color-background-alternate);
+}
+
+.key {
+	min-width: 5em;
+	text-overflow: ellipsis;
+	overflow: hidden;
+	flex-shrink: 1;
+	flex-basis: 16em;
+	flex-grow: 1;
+}
+
+.value {
+	margin-left: 1em;
+	position: relative;
+	display: flex;
+	flex-shrink: 0;
+	flex-basis: 5em;
+	flex-grow: 10;
+}

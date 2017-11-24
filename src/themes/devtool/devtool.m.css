@@ -1,0 +1,30 @@
+@import './variables.css';
+
+.root {
+	display: flex;
+	flex-direction: row;
+	align-items: stretch;
+	align-content: stretch;
+}
+
+.noapi {
+	text-align: center;
+	width: 300px;
+	margin: auto;
+	padding: 2em;
+}
+
+.banner {
+	font-size: 18px;
+	padding: 2em;
+}
+
+.left {
+	margin: var(--spacing-regular);
+	flex: 3;
+}
+
+.right {
+	flex: 1;
+	min-width: calc(var(--spacing-regular) * 44);
+}
