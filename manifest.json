@@ -5,7 +5,7 @@
 	"version": "0.0.1",
 	"devtools_page": "devtools.html",
 	"icons": {
-		"32": "devtool.png"
+		"32": "devtools.png"
 	},
 	"permissions": [
 		"tabs",
