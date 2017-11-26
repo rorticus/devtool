@@ -56,7 +56,7 @@ export interface TreePaneProperties extends ThemedProperties {
 	 * @param expanded If the tree pane item has the `children` attribute, expanded will be `true` if the item is in an
 	 *                 expanded state or `false` if not expanded.  Otherwise the value is `undefined`.
 	 */
-	getItemClass?(item: TreePaneItem, expanded: boolean | undefined): string | undefined | null;
+	getItemIconClass?(item: TreePaneItem, expanded: boolean | undefined): string | undefined | null;
 
 	/**
 	 * The label for the widget from an accessability perspective
@@ -118,11 +118,6 @@ const ThemedBase = ThemedMixin(WidgetBase);
  */
 export interface RowProperties extends ThemedProperties {
 	/**
-	 * A custom class which effects the display of the icon for the row
-	 */
-	class?: string | null;
-
-	/**
 	 * If a parent row, should it be rendered in an expanded or unexpanded state?
 	 */
 	expanded?: boolean;
@@ -131,6 +126,11 @@ export interface RowProperties extends ThemedProperties {
 	 * Does the row have children?
 	 */
 	hasChildren?: boolean;
+
+	/**
+	 * A custom class which effects the display of the icon for the row
+	 */
+	iconClass?: string | null;
 
 	/**
 	 * The label for the row, typically a `string`
@@ -183,9 +183,9 @@ export class Row extends ThemedBase<RowProperties> {
 			_onclick,
 			_ondblclick,
 			properties: {
-				class: rowClass,
 				expanded,
 				hasChildren,
+				iconClass,
 				label,
 				level,
 				selected,
@@ -215,7 +215,7 @@ export class Row extends ThemedBase<RowProperties> {
 				key: 'content'
 			}, [
 				v('div', {
-					classes: [ this.theme(css.label), iconCss.label, rowClass || null ],
+					classes: [ this.theme(css.label), iconCss.label, iconClass || null ],
 					title: title
 				}, [
 					v('a', {
@@ -438,7 +438,7 @@ export default class TreePane extends ThemedBase<TreePaneProperties> {
 	private _renderChild(item: TreePaneItem, level: number): WNode<Row> {
 		const { children, id: key, label, title } = item;
 		const navigation = this._navigation;
-		const { expanded: propsExpanded = [], getItemClass, selected, theme } = this.properties;
+		const { expanded: propsExpanded = [], getItemIconClass, selected, theme } = this.properties;
 		const expanded = includes(propsExpanded, key);
 		const hasChildren = Boolean(children);
 		if (!navigation.selected) {
@@ -455,9 +455,9 @@ export default class TreePane extends ThemedBase<TreePaneProperties> {
 		}
 
 		return w(Row, {
-			class: getItemClass && getItemClass(item, expanded),
 			expanded,
 			hasChildren,
+			iconClass: getItemIconClass && getItemIconClass(item, expanded),
 			key,
 			level,
 			label,

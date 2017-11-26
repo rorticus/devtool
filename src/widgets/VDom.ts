@@ -31,7 +31,7 @@ export class VDom extends ThemedBase<VDomProperties> {
 		return item;
 	}
 
-	private _getItemClass = (item: TreePaneItem): string | undefined | null => {
+	private _getItemIconClass = (item: TreePaneItem): string | undefined | null => {
 		if (item.title.indexOf('Widget') >= 0) {
 			return this.theme(vdomCss.wnode);
 		}
@@ -55,13 +55,14 @@ export class VDom extends ThemedBase<VDomProperties> {
 		if (!node) {
 			return this._createTreePaneItem(id, 'Undefined', id);
 		}
-		const children = node.children && node.children.length ? node.children.map((child, idx) => this._mapNodes(child, id, idx)) : undefined;
 		const key = node.properties && node.properties.key && typeof node.properties.key === 'string' || typeof node.properties.key === 'number' ? ` [${node.properties.key}]` : '';
 		if (node.type === 'hnode') {
 			const label = (node.tag || (node.text && `"${node.text}"`) || 'Virtual DOM') + key;
+			const children = node.children && node.children.length ? node.children.map((child, idx) => this._mapNodes(child, id, idx)) : undefined;
 			return this._createTreePaneItem(id, label, `Virtual DOM - ${id}`, children);
 		}
 		const label = (node.widgetConstructor || 'Widget') + key;
+		const children = node.rendered.length ? node.rendered.map((child, idx) => this._mapNodes(child, id, idx)) : undefined;
 		return this._createTreePaneItem(id, label, `Widget - ${id}`, children);
 	}
 
@@ -95,7 +96,7 @@ export class VDom extends ThemedBase<VDomProperties> {
 		}, [
 			w(TreePane, {
 				expanded,
-				getItemClass: this._getItemClass,
+				getItemIconClass: this._getItemIconClass,
 				root,
 				selected,
 				showRoot: true,

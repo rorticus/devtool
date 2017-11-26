@@ -14,7 +14,7 @@ import * as devtoolCss from './styles/devtool.m.css';
 
 export const ThemedBase = ThemedMixin(WidgetBase);
 
-type CurrentNode = { children?: CurrentNode[] } | undefined | null | string;
+type CurrentNode = { children?: CurrentNode[], rendered?: CurrentNode[] } | undefined | null | string;
 
 function findDNode(root: SerializedDNode, path: string): SerializedDNode {
 	const segments = path.split('/');
@@ -24,11 +24,11 @@ function findDNode(root: SerializedDNode, path: string): SerializedDNode {
 	}
 	let current: CurrentNode = { children: [ root ] };
 	while (segments.length) {
-		if (!current || typeof current === 'string' || !current.children) {
+		if (!current || typeof current === 'string' || (!current.rendered && !current.children)) {
 			return;
 		}
 		const index = Number(segments.shift());
-		current = current.children[index];
+		current = current.rendered && current.rendered[index] || current.children![index];
 	}
 	return current as SerializedDNode;
 }
