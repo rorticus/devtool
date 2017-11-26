@@ -113,25 +113,30 @@ export class DevTool extends ThemedBase<DevToolProperties> {
 			key: 'root'
 		}, [
 			v('div', {
-				classes: this.theme(devtoolCss.left)
+				classes: this.theme(devtoolCss.content),
+				key: 'content'
 			}, [
-				w(LastRender, {
-					onSelect: this._onLastRenderSelect
-				})
-			]),
-			v('div', {
-				classes: this.theme(devtoolCss.right)
-			}, [
-				w(AccordionPane, {
-					openKeys: items ? [ 'properties' ] : undefined
+				v('div', {
+					classes: this.theme(devtoolCss.left)
 				}, [
-					w(TitlePane, {
-						key: 'properties',
-						title: 'Properties'
+					w(LastRender, {
+						onSelect: this._onLastRenderSelect
+					})
+				]),
+				v('div', {
+					classes: this.theme(devtoolCss.right)
+				}, [
+					w(AccordionPane, {
+						openKeys: items ? [ 'properties' ] : undefined
 					}, [
-						w(ItemList, {
-							items
-						})
+						w(TitlePane, {
+							key: 'properties',
+							title: 'Properties'
+						}, [
+							w(ItemList, {
+								items
+							})
+						])
 					])
 				])
 			])

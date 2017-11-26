@@ -1,8 +1,16 @@
 @import './variables.css';
 
-.root {
+body {
+	align-items: stretch;
+	align-content: stretch;
 	display: flex;
-	flex-direction: row;
+	flex-direction: column;
+}
+
+.root {
+	flex: 1;
+	display: flex;
+	flex-direction: column;
 	align-items: stretch;
 	align-content: stretch;
 }
@@ -17,6 +25,14 @@
 .banner {
 	font-size: 18px;
 	padding: 2em;
+}
+
+.content {
+	flex: 1;
+	display: flex;
+	flex-direction: row;
+	align-items: stretch;
+	align-content: stretch;
 }
 
 .left {
