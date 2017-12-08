@@ -4,7 +4,7 @@
 	"short_name": "Dojo 2 DevTools",
 	"description": "A development tool extension for Dojo 2",
 	"homepage_url": "https://github.com/dojo/devtool",
-	"version": "0.0.1",
+	"version": "0.0.2",
 	"page_action": {
 		"default_icon": "img/logo/38x38.png",
 		"default_title": "Dojo 2 DevTools"
