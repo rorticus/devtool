@@ -1,0 +1,11 @@
+@import './variables.css';
+
+.root {
+	padding-left: var(--spacing-regular);
+}
+
+.toolbar {
+	margin: 0 auto;
+	padding: 0;
+	width: 100%;
+}

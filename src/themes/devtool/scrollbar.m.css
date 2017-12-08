@@ -1,0 +1,32 @@
+@import './variables.css';
+
+.slider {
+	background: var(--color-background);
+	border: var(--border-width) solid var(--color-border);
+	border-radius: 4px;
+	transition: border-color var(--transition-duration) var(--transition-easing);
+}
+
+.slider.dragging {
+	border-color: var(--color-border-strong);
+	transition: border-color var(--transition-duration) var(--transition-easing);
+}
+
+.horizontal,
+.horizontal .slider {
+	height: var(--grid-base);
+}
+
+.vertical,
+.vertical .slider {
+	width: var(--grid-base);
+}
+
+.invisible {
+	transition: opacity var(--transition-duration) var(--transition-easing);
+}
+
+.visible {
+	background: transparent;
+	transition: opacity var(--transition-duration) var(--transition-easing);
+}

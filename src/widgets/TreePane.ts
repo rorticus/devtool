@@ -31,7 +31,7 @@ export interface TreePaneItem {
 	 * The label for the item, if a type of `string`, it will be used with the `IconResolver` to determine the
 	 * specific icon used.
 	 */
-	label: DNode;
+	label: DNode | DNode[];
 
 	/**
 	 * The value displayed when the mouse hovers over an item.  Typically this would be set to the full path of
@@ -135,7 +135,7 @@ export interface RowProperties extends ThemedProperties {
 	/**
 	 * The label for the row, typically a `string`
 	 */
-	label: DNode;
+	label: DNode | DNode[];
 
 	/**
 	 * At what level in the UI should the row display itself at
@@ -220,7 +220,7 @@ export class Row extends ThemedBase<RowProperties> {
 				}, [
 					v('a', {
 						classes: this.theme(css.labelName)
-					}, [ label ])
+					}, Array.isArray(label) ? label : [ label ])
 				])
 			])
 		]);

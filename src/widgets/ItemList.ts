@@ -41,11 +41,15 @@ export class ItemList extends ThemedBase<PropertiesListProperties> {
 				}, [ String(items[key]) ])
 			]));
 		}
-		return children;
+		return [
+			v('ol', {
+				classes: this.theme(itemListCss.list)
+			}, children)
+		];
 	}
 
 	protected render() {
-		return v('ol', {
+		return v('div', {
 			classes: this.theme(itemListCss.root)
 		}, this._renderProperties());
 	}

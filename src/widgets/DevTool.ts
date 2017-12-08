@@ -1,18 +1,28 @@
-import { SerializedDNode } from '@dojo/diagnostics/serializeDNode';
+import { SerializedDNode, SerializedWNode } from '@dojo/diagnostics/serializeDNode';
 import { v, w } from '@dojo/widget-core/d';
-import { DNode, WidgetProperties } from '@dojo/widget-core/interfaces';
+import { DNode } from '@dojo/widget-core/interfaces';
 import WidgetBase from '@dojo/widget-core/WidgetBase';
 import ThemedMixin, { theme, ThemedProperties } from '@dojo/widget-core/mixins/Themed';
-import AccordionPane from '@dojo/widgets/accordionpane/AccordionPane';
 import Button from '@dojo/widgets/button/Button';
-import TitlePane from '@dojo/widgets/titlepane/TitlePane';
-import { getLastRender, highlight } from '../diagnostics';
+import Tab from '@dojo/widgets/tabcontroller/Tab';
+import TabController from '@dojo/widgets/tabcontroller/TabController';
+import { getLastRender, highlight, getProjectors, getEventLog } from '../diagnostics';
+import ActionBar, { ActionBarButton } from './ActionBar';
+import EventLog from './EventLog';
 import ItemList from './ItemList';
 import VDom from './VDom';
 
+import devToolTheme from '../themes/devtool/index';
+
 import * as devtoolCss from './styles/devtool.m.css';
+import * as icons from './styles/icons.m.css';
+import { DiagnosticAPI } from '@dojo/diagnostics/main';
 
 export const ThemedBase = ThemedMixin(WidgetBase);
+
+function isSerializedWNode(value: any): value is SerializedWNode {
+	return value && typeof value === 'object' && value.type === 'wnode';
+}
 
 type CurrentNode = { children?: CurrentNode[], rendered?: CurrentNode[] } | undefined | null | string;
 
@@ -39,52 +49,40 @@ export interface DevToolProperties extends ThemedProperties {
 	onCheckVersion?(): void;
 }
 
-export interface LastRenderProperties extends WidgetProperties {
-	onSelect?(item: SerializedDNode): void;
-}
-
-export class LastRender extends WidgetBase<LastRenderProperties> {
+@theme(devtoolCss)
+@theme(icons)
+export class DevTool extends ThemedBase<DevToolProperties> {
+	private _activeIndex = 0;
 	private _dnode?: SerializedDNode;
-
-	private _onVDomSelect(id: string) {
-		highlight('main', id);
-		const { onSelect } = this.properties;
-		if (this._dnode && onSelect) {
-			onSelect(findDNode(this._dnode, id));
-		}
-	}
+	private _eventLog?: DiagnosticAPI['eventLog'];
+	private _projectors?: string[];
+	private _selectedId?: string;
+	private _view?: 'vdom' | 'logs';
 
 	private async _onLastRenderClick() {
 		try {
-			this._dnode = await getLastRender('main');
+			if (!this._projectors) {
+				this._projectors = await getProjectors();
+			}
+			this._dnode = await getLastRender(this._projectors[0]);
 		}
 		catch (e) {
 			this._dnode = undefined;
 			console.error(e);
 		}
+		this._view = 'vdom';
 		this.invalidate();
 	}
 
-	protected render() {
-		return [
-			w(Button, {
-				onClick: this._onLastRenderClick
-			}, [ 'Get Last Render' ]),
-			w(VDom, {
-				root: this._dnode,
-
-				onSelect: this._onVDomSelect
-			})
-		];
-	}
-}
-
-@theme(devtoolCss)
-export class DevTool extends ThemedBase<DevToolProperties> {
-	private _selected: SerializedDNode;
-
-	private _onLastRenderSelect(node: SerializedDNode) {
-		this._selected = node;
+	private async _onLogsClick() {
+		try {
+			this._eventLog = await getEventLog();
+		}
+		catch (e) {
+			console.error();
+		}
+		this._view = 'logs';
+		this.invalidate();
 	}
 
 	private _onRefreshClick() {
@@ -92,8 +90,100 @@ export class DevTool extends ThemedBase<DevToolProperties> {
 		onCheckVersion && onCheckVersion();
 	}
 
+	private _onRequestTabChange(index: number) {
+		this._activeIndex = index;
+		this.invalidate();
+	}
+
+	private _onVDomSelect(id: string) {
+		if (this._projectors) {
+			highlight(this._projectors[0], id);
+		}
+		this._selectedId = id;
+	}
+
+	private _renderLeft() {
+		const { _dnode: root, _eventLog: eventLog, _view } = this;
+		const left = v('div', {
+			classes: this.theme(devtoolCss.left)
+		}, [
+			v('div', {
+				classes: this.theme(devtoolCss.leftHeader)
+			}, [
+				v('span', {
+					classes: this.theme(devtoolCss.leftTitle)
+				}, [
+					_view && _view === 'logs' ? 'Event Logs' : 'Last Render'
+				]),
+				w(ActionBar, {
+					label: 'Actionbar Actions'
+				}, [
+					w(ActionBarButton, {
+						iconClass: this.theme(icons.render),
+						key: 'lastRender',
+						label: 'Display Last Render',
+						onClick: this._onLastRenderClick
+					}),
+					w(ActionBarButton, {
+						iconClass: this.theme(icons.logs),
+						key: 'logs',
+						label: 'Display Event Logs',
+						onClick: this._onLogsClick
+					})
+				])
+			])
+		]);
+		const view = _view && _view === 'logs' ? w(EventLog, {
+			key: 'eventLog',
+			eventLog
+		}) : w(VDom, {
+			key: 'vdom',
+			root,
+			onSelect: this._onVDomSelect
+		});
+		left.children!.push(view);
+		return left;
+	}
+
+	private _renderRight() {
+		const { _activeIndex: activeIndex, _dnode, _selectedId } = this;
+		const selected = _dnode && _selectedId ? findDNode(_dnode, _selectedId) : undefined;
+		const items = selected && typeof selected !== 'string' ? selected.properties : undefined;
+		const baseRegistry = isSerializedWNode(selected) && selected.coreProperties['baseRegistry'] ? JSON.parse(selected.coreProperties['baseRegistry'] as string) : undefined;
+		return v('div', {
+			classes: this.theme(devtoolCss.right)
+		}, [
+			w(TabController, {
+				activeIndex,
+				onRequestTabChange: this._onRequestTabChange
+			}, [
+				w(Tab, {
+					key: 'properties',
+					label: 'Properties',
+					// TODO: Remove when https://github.com/dojo/widgets/issues/400 resolved
+					theme: devToolTheme
+				}, [
+					w(ItemList, {
+						items
+					})
+				]),
+				baseRegistry ? w(Tab, {
+					key: 'base-registry',
+					label: 'Base Registry',
+					theme: devToolTheme
+				}, [
+					w(ItemList, {
+						items: baseRegistry
+					})
+				]) : null
+			])
+		]);
+	}
+
 	protected render(): DNode {
-		const { _selected, properties: { apiVersion } } = this;
+		const { apiVersion } = this.properties;
+
+		/* If we can't detect the diagnostics, we will render the No API message */
 		if (!apiVersion) {
 			return v('div', {
 				classes: this.theme(devtoolCss.noapi),
@@ -107,7 +197,7 @@ export class DevTool extends ThemedBase<DevToolProperties> {
 				}, [ 'Refresh' ])
 			]);
 		}
-		const items = _selected && typeof _selected !== 'string' ? _selected.properties : undefined;
+
 		return v('div', {
 			classes: this.theme(devtoolCss.root),
 			key: 'root'
@@ -116,29 +206,8 @@ export class DevTool extends ThemedBase<DevToolProperties> {
 				classes: this.theme(devtoolCss.content),
 				key: 'content'
 			}, [
-				v('div', {
-					classes: this.theme(devtoolCss.left)
-				}, [
-					w(LastRender, {
-						onSelect: this._onLastRenderSelect
-					})
-				]),
-				v('div', {
-					classes: this.theme(devtoolCss.right)
-				}, [
-					w(AccordionPane, {
-						openKeys: items ? [ 'properties' ] : undefined
-					}, [
-						w(TitlePane, {
-							key: 'properties',
-							title: 'Properties'
-						}, [
-							w(ItemList, {
-								items
-							})
-						])
-					])
-				])
+				this._renderLeft(),
+				this._renderRight()
 			])
 		]);
 	}

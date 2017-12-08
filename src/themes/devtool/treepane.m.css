@@ -4,7 +4,7 @@
 	background-color: var(--color-background);
 	color: var(--color-text-primary);
 	font-size: 13px;
-	height: 100%;
+	flex: 1;
 	line-height: 1.4em;
 	overflow: hidden;
 	position: relative;
@@ -13,10 +13,13 @@
 }
 
 .scroll {
+	box-sizing: border-box;
 	height: 100%;
 	outline: none;
 	position: absolute;
 	width: 100%;
+	margin: 0;
+	padding: 0;
 }
 
 .label {
@@ -26,6 +29,22 @@
 	line-height: 22px;
 	overflow: hidden;
 	text-overflow: ellipsis;
+}
+
+.label i {
+	padding-left: 12px;
+}
+
+.label i::before {
+	background-size: 16px;
+	background-position: 0;
+	background-repeat: no-repeat;
+	height: 22px;
+	padding-right: 2px;
+	-webkit-font-smoothing: antialiased;
+	width: 16px;
+	display: inline-block;
+	vertical-align: top;
 }
 
 .label::before {

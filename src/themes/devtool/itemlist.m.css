@@ -1,14 +1,22 @@
 @import './variables.css';
 
 .root {
+	flex: 1;
+	padding: var(--spacing-regular) 0;
+	overflow-y: scroll;
+}
+
+.list {
 	list-style-type: none;
 	margin: 0;
 	padding: 0;
 }
 
 .empty {
+	height: 100%;
 	align-items: center;
 	color: var(--color-text-faded);
+	font-size: 16px;
 	display: flex;
 	justify-content: center;
 }
@@ -20,10 +28,12 @@
 
 .item {
 	font-size: 11px;
+	line-height: 13px;
 	font-family: Menlo, monospace;
 	text-overflow: ellipsis;
 	white-space: nowrap;
 	display: flex;
+	padding: 2px;
 	align-items: center;
 }
 
@@ -32,6 +42,7 @@
 }
 
 .key {
+	color: var(--dojo-red);
 	min-width: 5em;
 	text-overflow: ellipsis;
 	overflow: hidden;
@@ -42,6 +53,8 @@
 
 .value {
 	margin-left: 1em;
+	padding-left: 2px;
+	text-overflow: ellipsis;
 	position: relative;
 	display: flex;
 	flex-shrink: 0;

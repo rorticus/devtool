@@ -1,18 +1,31 @@
 @import './variables.css';
 
-body {
-	align-items: stretch;
-	align-content: stretch;
-	display: flex;
-	flex-direction: column;
+@media screen
+	and (max-width: 599px) {
+		.content {
+			flex-direction: column;
+		}
+
+		.right {
+			border-top: var(--border-width) solid var(--color-border);
+			min-height: calc(var(--spacing-regular) * 40);
+		}
+}
+
+@media screen
+	and (min-width: 600px) {
+		.content {
+			flex-direction: row;
+		}
+
+		.right {
+			border-left: var(--border-width) solid var(--color-border);
+			min-width: calc(var(--spacing-regular) * 40);
+		}
 }
 
 .root {
-	flex: 1;
-	display: flex;
-	flex-direction: column;
-	align-items: stretch;
-	align-content: stretch;
+	height: 100vh;
 }
 
 .noapi {
@@ -28,19 +41,35 @@ body {
 }
 
 .content {
-	flex: 1;
+	height: 100vh;
 	display: flex;
-	flex-direction: row;
-	align-items: stretch;
-	align-content: stretch;
 }
 
 .left {
+	display: flex;
 	margin: var(--spacing-regular);
 	flex: 3;
+	flex-direction: column;
+}
+
+.leftHeader {
+	display: flex;
+	width: 100%;
+}
+
+.leftHeader > *:first-child {
+	flex: 1;
+}
+
+.leftTitle {
+	color: var(--color-highlight);
+	font-size: 16px;
+	font-weight: 700;
 }
 
 .right {
+	display: flex;
 	flex: 1;
-	min-width: calc(var(--spacing-regular) * 44);
+	flex-direction: column;
+	padding: 0 var(--spacing-regular);
 }

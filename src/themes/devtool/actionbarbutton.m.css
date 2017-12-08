@@ -1,0 +1,10 @@
+.root {
+	background: inherit;
+}
+
+.label {
+	height: 24px;
+	line-height: 24px;
+	min-width: 24px;
+	outline: none;
+}

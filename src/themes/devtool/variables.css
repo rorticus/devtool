@@ -6,11 +6,11 @@
 	--touch-target-min: 48px;
 
 	/* Fonts */
-	--font-size-base: 16px;
-	--font-size-small: 14px;
-	--font-size-title: 20px;
-	--font-size-icon: 24px;
-	--line-height-base: 24px;
+	--font-size-base: 12px;
+	--font-size-small: 10px;
+	--font-size-title: 16px;
+	--font-size-icon: 12px;
+	--line-height-base: 12px;
 
 	/* Color hex values */
 	--dojo-white: #ffffff;
