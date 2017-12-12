@@ -56,6 +56,13 @@ export class DevTool extends ThemedBase<DevToolProperties> {
 	private _selectedEventId?: number;
 	private _view?: 'vdom' | 'logs';
 
+	private _listValueFormat(value: any, key: string) {
+		if ((key === 'innerRender' || key === 'outerRender') && typeof value === 'number') {
+			return value.toFixed(2);
+		}
+		return String(value);
+	}
+
 	private _onEventLogSelect(index: number) {
 		this._selectedEventId = index;
 		this.invalidate();
@@ -169,7 +176,8 @@ export class DevTool extends ThemedBase<DevToolProperties> {
 					theme: devToolTheme
 				}, [
 					w(ItemList, {
-						items
+						items,
+						valueFormatter: this._listValueFormat
 					})
 				]) : null
 			])

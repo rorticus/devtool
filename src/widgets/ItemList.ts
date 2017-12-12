@@ -6,6 +6,7 @@ import * as itemListCss from './styles/itemlist.m.css';
 
 export interface PropertiesListProperties extends ThemedProperties {
 	items?: { [key: string]: any };
+	valueFormatter?: (value: any, key: string, items: { [key: string]: any }) => DNode;
 }
 
 export const ThemedBase = ThemedMixin(WidgetBase);
@@ -13,7 +14,7 @@ export const ThemedBase = ThemedMixin(WidgetBase);
 @theme(itemListCss)
 export class ItemList extends ThemedBase<PropertiesListProperties> {
 	private _renderProperties(): DNode[] | undefined {
-		const { items } = this.properties;
+		const { items, valueFormatter } = this.properties;
 		const keys = items && Object.keys(items).sort() || [];
 		if (!items || !keys.length) {
 			return [
@@ -38,7 +39,7 @@ export class ItemList extends ThemedBase<PropertiesListProperties> {
 				v('span', {
 					classes: this.theme(itemListCss.value),
 					key: 'value'
-				}, [ String(items[key]) ])
+				}, [ valueFormatter && valueFormatter(items[key], key, items) || String(items[key]) ])
 			]));
 		}
 		return [
