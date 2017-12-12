@@ -14,7 +14,7 @@ export const ThemedBase = ThemedMixin(WidgetBase);
 export class ItemList extends ThemedBase<PropertiesListProperties> {
 	private _renderProperties(): DNode[] | undefined {
 		const { items } = this.properties;
-		const keys = items && Object.keys(items) || [];
+		const keys = items && Object.keys(items).sort() || [];
 		if (!items || !keys.length) {
 			return [
 				v('div', {

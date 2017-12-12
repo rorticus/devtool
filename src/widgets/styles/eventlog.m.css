@@ -1,3 +1,7 @@
 .root {
 	display: inherit;
 }
+
+.selected {
+	display: inherit;
+}

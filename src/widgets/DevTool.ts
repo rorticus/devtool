@@ -1,4 +1,4 @@
-import { SerializedDNode, SerializedWNode } from '@dojo/diagnostics/serializeDNode';
+import { SerializedDNode } from '@dojo/diagnostics/serializeDNode';
 import { v, w } from '@dojo/widget-core/d';
 import { DNode } from '@dojo/widget-core/interfaces';
 import WidgetBase from '@dojo/widget-core/WidgetBase';
@@ -19,10 +19,6 @@ import * as icons from './styles/icons.m.css';
 import { DiagnosticAPI } from '@dojo/diagnostics/main';
 
 export const ThemedBase = ThemedMixin(WidgetBase);
-
-function isSerializedWNode(value: any): value is SerializedWNode {
-	return value && typeof value === 'object' && value.type === 'wnode';
-}
 
 type CurrentNode = { children?: CurrentNode[], rendered?: CurrentNode[] } | undefined | null | string;
 
@@ -57,7 +53,13 @@ export class DevTool extends ThemedBase<DevToolProperties> {
 	private _eventLog?: DiagnosticAPI['eventLog'];
 	private _projectors?: string[];
 	private _selectedId?: string;
+	private _selectedEventId?: number;
 	private _view?: 'vdom' | 'logs';
+
+	private _onEventLogSelect(index: number) {
+		this._selectedEventId = index;
+		this.invalidate();
+	}
 
 	private async _onLastRenderClick() {
 		try {
@@ -103,7 +105,7 @@ export class DevTool extends ThemedBase<DevToolProperties> {
 	}
 
 	private _renderLeft() {
-		const { _dnode: root, _eventLog: eventLog, _view } = this;
+		const { _dnode: root, _eventLog: eventLog, _selectedEventId: selected, _view } = this;
 		const left = v('div', {
 			classes: this.theme(devtoolCss.left)
 		}, [
@@ -113,7 +115,7 @@ export class DevTool extends ThemedBase<DevToolProperties> {
 				v('span', {
 					classes: this.theme(devtoolCss.leftTitle)
 				}, [
-					_view && _view === 'logs' ? 'Event Logs' : 'Last Render'
+					_view && _view === 'logs' ? 'Event Logs' : _view ? 'Last Render' : 'Dojo 2 Development Tool'
 				]),
 				w(ActionBar, {
 					label: 'Actionbar Actions'
@@ -135,7 +137,9 @@ export class DevTool extends ThemedBase<DevToolProperties> {
 		]);
 		const view = _view && _view === 'logs' ? w(EventLog, {
 			key: 'eventLog',
-			eventLog
+			eventLog,
+			selected,
+			onSelect: this._onEventLogSelect
 		}) : w(VDom, {
 			key: 'vdom',
 			root,
@@ -146,10 +150,11 @@ export class DevTool extends ThemedBase<DevToolProperties> {
 	}
 
 	private _renderRight() {
-		const { _activeIndex: activeIndex, _dnode, _selectedId } = this;
+		const { _activeIndex: activeIndex, _dnode, _eventLog, _selectedEventId, _selectedId, _view } = this;
 		const selected = _dnode && _selectedId ? findDNode(_dnode, _selectedId) : undefined;
-		const items = selected && typeof selected !== 'string' ? selected.properties : undefined;
-		const baseRegistry = isSerializedWNode(selected) && selected.coreProperties['baseRegistry'] ? JSON.parse(selected.coreProperties['baseRegistry'] as string) : undefined;
+		const items = _view && _view === 'logs' ?
+			_eventLog && _selectedEventId !== undefined ? _eventLog[_selectedEventId].data : undefined :
+			selected && typeof selected !== 'string' ? selected.properties : undefined;
 		return v('div', {
 			classes: this.theme(devtoolCss.right)
 		}, [
@@ -157,7 +162,7 @@ export class DevTool extends ThemedBase<DevToolProperties> {
 				activeIndex,
 				onRequestTabChange: this._onRequestTabChange
 			}, [
-				w(Tab, {
+				items ? w(Tab, {
 					key: 'properties',
 					label: 'Properties',
 					// TODO: Remove when https://github.com/dojo/widgets/issues/400 resolved
@@ -165,15 +170,6 @@ export class DevTool extends ThemedBase<DevToolProperties> {
 				}, [
 					w(ItemList, {
 						items
-					})
-				]),
-				baseRegistry ? w(Tab, {
-					key: 'base-registry',
-					label: 'Base Registry',
-					theme: devToolTheme
-				}, [
-					w(ItemList, {
-						items: baseRegistry
 					})
 				]) : null
 			])
