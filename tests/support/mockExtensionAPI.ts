@@ -8,7 +8,7 @@ global.browser = {
 			}
 		},
 		panels: {
-			create() { }
+			create() {}
 		}
 	}
 };

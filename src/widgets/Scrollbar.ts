@@ -70,7 +70,7 @@ function fromRelative(relative: number, relativeSize: number, absoluteSize: numb
  * @param absoluteSize The absolute size to compare with the relative size
  */
 function toRelative(absolute: number, relativeSize: number, absoluteSize: number): number {
-	return absoluteSize ? (absolute / absoluteSize) * relativeSize : 0;
+	return absoluteSize ? absolute / absoluteSize * relativeSize : 0;
 }
 
 /**
@@ -101,17 +101,11 @@ export default class ScrollBar extends ThemedBase<ScrollBarProperties> {
 		if (this.meta(Matches).get(`${key}`, event)) {
 			event.preventDefault();
 			const domSize = this._getDomSize();
-			const {
-				horizontal,
-				position,
-				size = domSize,
-				sliderMin = 10,
-				sliderSize,
-				onScroll
-			} = this.properties;
-			const absoluteDelta = (horizontal ? event.offsetX : event.offsetY) -
+			const { horizontal, position, size = domSize, sliderMin = 10, sliderSize, onScroll } = this.properties;
+			const absoluteDelta =
+				(horizontal ? event.offsetX : event.offsetY) -
 				(fromRelative(position, size, domSize) +
-				((sliderSize ? fromRelative(sliderSize, size, domSize) : sliderMin) / 2));
+					(sliderSize ? fromRelative(sliderSize, size, domSize) : sliderMin) / 2);
 			onScroll(toRelative(absoluteDelta, size, domSize));
 		}
 	}
@@ -166,35 +160,39 @@ export default class ScrollBar extends ThemedBase<ScrollBarProperties> {
 		const renderSliderSize = `${absoluteSliderSize > sliderMin ? absoluteSliderSize : sliderMin}px`;
 		const visible = sliderSize >= size ? false : propsVisible !== undefined ? propsVisible : this._visible;
 		const styles = {
-			[ horizontal ? 'left' : 'top' ]: renderPosition,
-			[ horizontal ? 'width' : 'height' ]: renderSliderSize
+			[horizontal ? 'left' : 'top']: renderPosition,
+			[horizontal ? 'width' : 'height']: renderSliderSize
 		};
 
-		return v('div', {
-			classes: [
-				...this.theme([
-					scrollbarCss.root,
-					horizontal ? scrollbarCss.horizontal : scrollbarCss.vertical,
-					visible || dragging ? scrollbarCss.visible : scrollbarCss.invisible
-				]),
-				scrollbarCss.rootFixed,
-				horizontal ? scrollbarCss.horizontalFixed : scrollbarCss.verticalFixed,
-				visible || dragging ? scrollbarCss.visibleFixed : scrollbarCss.invisibleFixed
-			],
-			key,
-
-			onclick: this._onclick,
-			onpointerenter: this._onpointerenter,
-			onpointerleave: this._onpointerleave
-		}, [
-			v('div', {
+		return v(
+			'div',
+			{
 				classes: [
-					...this.theme([ scrollbarCss.slider, dragging ? scrollbarCss.dragging : null ]),
-					scrollbarCss.sliderFixed
+					...this.theme([
+						scrollbarCss.root,
+						horizontal ? scrollbarCss.horizontal : scrollbarCss.vertical,
+						visible || dragging ? scrollbarCss.visible : scrollbarCss.invisible
+					]),
+					scrollbarCss.rootFixed,
+					horizontal ? scrollbarCss.horizontalFixed : scrollbarCss.verticalFixed,
+					visible || dragging ? scrollbarCss.visibleFixed : scrollbarCss.invisibleFixed
 				],
-				key: 'slider',
-				styles
-			})
-		]);
+				key,
+
+				onclick: this._onclick,
+				onpointerenter: this._onpointerenter,
+				onpointerleave: this._onpointerleave
+			},
+			[
+				v('div', {
+					classes: [
+						...this.theme([scrollbarCss.slider, dragging ? scrollbarCss.dragging : null]),
+						scrollbarCss.sliderFixed
+					],
+					key: 'slider',
+					styles
+				})
+			]
+		);
 	}
 }

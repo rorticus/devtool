@@ -7,6 +7,7 @@ import * as eventlog from './eventlog.m.css';
 import * as icons from './icons.m.css';
 import * as itemlist from './itemlist.m.css';
 import * as scrollbar from './scrollbar.m.css';
+import * as storestate from './storestate.m.css';
 import * as tabcontroller from './tabcontroller.m.css';
 import * as treepane from './treepane.m.css';
 import * as vdom from './vdom.m.css';
@@ -21,6 +22,7 @@ const devtoolTheme = {
 	icons,
 	itemlist,
 	scrollbar,
+	storestate,
 	treepane,
 	vdom
 };

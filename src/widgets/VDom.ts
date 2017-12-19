@@ -25,7 +25,12 @@ export class VDom extends ThemedBase<VDomProperties> {
 	private _treeItemMap = new Map<string, TreePaneItem>();
 	private _root: TreePaneItem | undefined;
 
-	private _createTreePaneItem(id: string, label: DNode | DNode[], title: string, children?: TreePaneItem[]): TreePaneItem {
+	private _createTreePaneItem(
+		id: string,
+		label: DNode | DNode[],
+		title: string,
+		children?: TreePaneItem[]
+	): TreePaneItem {
 		const item = { children, id, label, title };
 		this._treeItemMap.set(id, item);
 		return item;
@@ -42,7 +47,7 @@ export class VDom extends ThemedBase<VDomProperties> {
 			return this.theme(vdomCss.string);
 		}
 		return this.theme(vdomCss.empty);
-	}
+	};
 
 	private _mapNodes(node: SerializedDNode, path: string = '', index: number = 0): TreePaneItem {
 		const id = `${path}/${index}`;
@@ -55,27 +60,40 @@ export class VDom extends ThemedBase<VDomProperties> {
 		if (!node) {
 			return this._createTreePaneItem(id, 'Undefined', id);
 		}
-		const key = node.properties && node.properties.key && typeof node.properties.key === 'string' || typeof node.properties.key === 'number' ? v('span', {
-			classes: this.theme(vdomCss.keyLabel),
-			key: 'key'
-		}, [
-			v('i', {
-				'aria-hidden': true,
-				'aria-label': 'Key',
-				classes: this.theme(vdomCss.key),
-				role: 'presentation'
-			}),
-			`${node.properties.key}`
-		]) : null;
+		const key =
+			(node.properties && node.properties.key && typeof node.properties.key === 'string') ||
+			typeof node.properties.key === 'number'
+				? v(
+						'span',
+						{
+							classes: this.theme(vdomCss.keyLabel),
+							key: 'key'
+						},
+						[
+							v('i', {
+								'aria-hidden': true,
+								'aria-label': 'Key',
+								classes: this.theme(vdomCss.key),
+								role: 'presentation'
+							}),
+							`${node.properties.key}`
+						]
+					)
+				: null;
 		if (node.type === 'hnode') {
-			const labelNode = v('span', {}, [ (node.tag || (node.text && `"${node.text}"`) || 'Virtual DOM') ]);
-			const label = [ labelNode, key ];
-			const children = node.children && node.children.length ? node.children.map((child, idx) => this._mapNodes(child, id, idx)) : undefined;
+			const labelNode = v('span', {}, [node.tag || (node.text && `"${node.text}"`) || 'Virtual DOM']);
+			const label = [labelNode, key];
+			const children =
+				node.children && node.children.length
+					? node.children.map((child, idx) => this._mapNodes(child, id, idx))
+					: undefined;
 			return this._createTreePaneItem(id, label, `Virtual DOM - ${id}`, children);
 		}
-		const labelNode = v('span', {}, [ (node.widgetConstructor || 'Widget') ]);
-		const label = [ labelNode, key ];
-		const children = node.rendered.length ? node.rendered.map((child, idx) => this._mapNodes(child, id, idx)) : undefined;
+		const labelNode = v('span', {}, [node.widgetConstructor || 'Widget']);
+		const label = [labelNode, key];
+		const children = node.rendered.length
+			? node.rendered.map((child, idx) => this._mapNodes(child, id, idx))
+			: undefined;
 		return this._createTreePaneItem(id, label, `Widget - ${id}`, children);
 	}
 
@@ -89,8 +107,7 @@ export class VDom extends ThemedBase<VDomProperties> {
 		const { _expanded } = this;
 		if (includes(_expanded, id)) {
 			_expanded.splice(_expanded.indexOf(id), 1);
-		}
-		else {
+		} else {
 			_expanded.push(id);
 		}
 		this.invalidate();
@@ -106,16 +123,18 @@ export class VDom extends ThemedBase<VDomProperties> {
 			this._root = this._mapNodes(this.properties.root);
 		}
 		const { _expanded: expanded, _root: root, _selected: selected } = this;
-		return root ? w(TreePane, {
-			expanded,
-			getItemIconClass: this._getItemIconClass,
-			root,
-			selected,
-			showRoot: true,
-			toggleOnArrowClick: true,
-			onItemSelect: this._onItemSelect,
-			onItemToggle: this._onItemToggle
-		}) : null;
+		return root
+			? w(TreePane, {
+					expanded,
+					getItemIconClass: this._getItemIconClass,
+					root,
+					selected,
+					showRoot: true,
+					toggleOnArrowClick: true,
+					onItemSelect: this._onItemSelect,
+					onItemToggle: this._onItemToggle
+				})
+			: null;
 	}
 }
 

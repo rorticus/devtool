@@ -44,18 +44,22 @@ export class ActionBarButton extends ThemedBase<ActionBarButtonProperties, null>
 
 	render() {
 		const { iconClass, label: title } = this.properties;
-		return v('li', {
-			classes: [ this.theme(actionbarbuttonCss.root), actionbarbuttonCss.rootFixed ],
-			role: 'presentation',
-			onclick: this._onclick
-		}, [
-			v('a', {
-				classes: [ this.theme(actionbarbuttonCss.label), actionbarbuttonCss.labelFixed, iconClass || null ],
-				role: 'button',
-				tabIndex: 0,
-				title
-			})
-		]);
+		return v(
+			'li',
+			{
+				classes: [this.theme(actionbarbuttonCss.root), actionbarbuttonCss.rootFixed],
+				role: 'presentation',
+				onclick: this._onclick
+			},
+			[
+				v('a', {
+					classes: [this.theme(actionbarbuttonCss.label), actionbarbuttonCss.labelFixed, iconClass || null],
+					role: 'button',
+					tabIndex: 0,
+					title
+				})
+			]
+		);
 	}
 }
 
@@ -65,16 +69,24 @@ export class ActionBarButton extends ThemedBase<ActionBarButtonProperties, null>
 @theme(actionbarCss)
 export class ActionBar extends ThemedBase<ActionBarProperties, WNode<ActionBarButton>> {
 	render() {
-		return v('div', {
-			classes: [ this.theme(actionbarCss.root), actionbarCss.rootFixed ],
-			key: 'root'
-		} , [
-			v('ul', {
-				'aria-label': this.properties.label,
-				classes: [ this.theme(actionbarCss.toolbar), actionbarCss.toolbarFixed ],
-				role: 'toolbar'
-			}, this.children)
-		]);
+		return v(
+			'div',
+			{
+				classes: [this.theme(actionbarCss.root), actionbarCss.rootFixed],
+				key: 'root'
+			},
+			[
+				v(
+					'ul',
+					{
+						'aria-label': this.properties.label,
+						classes: [this.theme(actionbarCss.toolbar), actionbarCss.toolbarFixed],
+						role: 'toolbar'
+					},
+					this.children
+				)
+			]
+		);
 	}
 }
 

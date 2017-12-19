@@ -182,48 +182,56 @@ export class Row extends ThemedBase<RowProperties> {
 		const {
 			_onclick,
 			_ondblclick,
-			properties: {
-				expanded,
-				hasChildren,
-				iconClass,
-				label,
-				level,
-				selected,
-				title
-			}
+			properties: { expanded, hasChildren, iconClass, label, level, selected, title }
 		} = this;
 		const classes = [
 			css.row,
-			selected && css.selected || null,
-			hasChildren && css.hasChildren || null,
-			expanded && css.expanded || null
+			(selected && css.selected) || null,
+			(hasChildren && css.hasChildren) || null,
+			(expanded && css.expanded) || null
 		];
-		return v('div', {
-			'aria-level': String(level),
-			'aria-selected': selected,
-			classes: this.theme(classes),
-			role: 'treeitem',
-			styles: {
-				'padding-left': String(level * ROW_LEVEL_LEFT_PADDING) + 'px'
-			},
+		return v(
+			'div',
+			{
+				'aria-level': String(level),
+				'aria-selected': selected,
+				classes: this.theme(classes),
+				role: 'treeitem',
+				styles: {
+					'padding-left': String(level * ROW_LEVEL_LEFT_PADDING) + 'px'
+				},
 
-			onclick: _onclick,
-			ondblclick: _ondblclick
-		}, [
-			v('div', {
-				classes: this.theme(css.content),
-				key: 'content'
-			}, [
-				v('div', {
-					classes: [ this.theme(css.label), iconCss.label, iconClass || null ],
-					title: title
-				}, [
-					v('a', {
-						classes: this.theme(css.labelName)
-					}, Array.isArray(label) ? label : [ label ])
-				])
-			])
-		]);
+				onclick: _onclick,
+				ondblclick: _ondblclick
+			},
+			[
+				v(
+					'div',
+					{
+						classes: this.theme(css.content),
+						key: 'content'
+					},
+					[
+						v(
+							'div',
+							{
+								classes: [this.theme(css.label), iconCss.label, iconClass || null],
+								title: title
+							},
+							[
+								v(
+									'a',
+									{
+										classes: this.theme(css.labelName)
+									},
+									Array.isArray(label) ? label : [label]
+								)
+							]
+						)
+					]
+				)
+			]
+		);
 	}
 }
 
@@ -293,55 +301,52 @@ export default class TreePane extends ThemedBase<TreePaneProperties> {
 	 */
 	private _onkeydown(evt: KeyboardEvent) {
 		const {
-			properties: {
-				expanded = [],
-				onItemOpen,
-				onItemSelect,
-				onItemToggle
-			},
+			properties: { expanded = [], onItemOpen, onItemSelect, onItemToggle },
 			_navigation: { next, previous, selected, start, end, selectedPosition }
 		} = this;
 		switch (evt.which) {
-		case Keys.Down: /* Select Next Row */
-			if (next && onItemSelect) {
-				evt.preventDefault();
-				onItemSelect(next);
-				const visibleEnd = end - start - 4;
-				if (selectedPosition > visibleEnd) { /* scroll down */
-					this._onPositionUpdate(Math.ceil(selectedPosition - visibleEnd));
+			case Keys.Down /* Select Next Row */:
+				if (next && onItemSelect) {
+					evt.preventDefault();
+					onItemSelect(next);
+					const visibleEnd = end - start - 4;
+					if (selectedPosition > visibleEnd) {
+						/* scroll down */
+						this._onPositionUpdate(Math.ceil(selectedPosition - visibleEnd));
+					}
 				}
-			}
-			break;
-		case Keys.Up: /* Select Previous Row */
-			if (previous && onItemSelect) {
-				evt.preventDefault();
-				onItemSelect(previous);
-				if (selectedPosition < 2) { /* scroll up */
-					this._onPositionUpdate(selectedPosition - 2);
+				break;
+			case Keys.Up /* Select Previous Row */:
+				if (previous && onItemSelect) {
+					evt.preventDefault();
+					onItemSelect(previous);
+					if (selectedPosition < 2) {
+						/* scroll up */
+						this._onPositionUpdate(selectedPosition - 2);
+					}
 				}
-			}
-			break;
-		case Keys.Left: /* Close a folder */
-			if (selected && includes(expanded, selected) && onItemToggle) {
-				evt.preventDefault();
-				onItemToggle(selected);
-			}
-			break;
-		case Keys.Right: /* Open a folder */
-			if (selected) {
-				const item = this._findItem(selected);
-				if (item && item.children && !includes(expanded, selected) && onItemToggle) {
+				break;
+			case Keys.Left /* Close a folder */:
+				if (selected && includes(expanded, selected) && onItemToggle) {
 					evt.preventDefault();
 					onItemToggle(selected);
 				}
-			}
-			break;
-		case Keys.Enter: /* Open a folder or open an item */
-			if (selected && onItemOpen) {
-				evt.preventDefault();
-				onItemOpen(selected);
-			}
-			break;
+				break;
+			case Keys.Right /* Open a folder */:
+				if (selected) {
+					const item = this._findItem(selected);
+					if (item && item.children && !includes(expanded, selected) && onItemToggle) {
+						evt.preventDefault();
+						onItemToggle(selected);
+					}
+				}
+				break;
+			case Keys.Enter /* Open a folder or open an item */:
+				if (selected && onItemOpen) {
+					evt.preventDefault();
+					onItemOpen(selected);
+				}
+				break;
 		}
 	}
 
@@ -376,7 +381,8 @@ export default class TreePane extends ThemedBase<TreePaneProperties> {
 		const { _scrollPosition, _size, _sliderSize } = this;
 		const updatedPosition = _scrollPosition + delta;
 		const maxPosition = _size - _sliderSize + 1;
-		this._scrollPosition = updatedPosition > 0 ? updatedPosition > maxPosition ? maxPosition : updatedPosition : 0;
+		this._scrollPosition =
+			updatedPosition > 0 ? (updatedPosition > maxPosition ? maxPosition : updatedPosition) : 0;
 		if (_scrollPosition !== this._scrollPosition) {
 			if (invalidateOnChange) {
 				this.invalidate();
@@ -417,7 +423,7 @@ export default class TreePane extends ThemedBase<TreePaneProperties> {
 	 */
 	private _onScrollbarScroll = (delta: number) => {
 		this._onPositionUpdate(delta);
-	}
+	};
 
 	/**
 	 * Handler for the `onwheel` when there is a wheel event in the scroll area that calls the
@@ -444,13 +450,11 @@ export default class TreePane extends ThemedBase<TreePaneProperties> {
 		if (!navigation.selected) {
 			if (selected === key) {
 				navigation.selected = key;
-			}
-			else {
+			} else {
 				navigation.previous = key;
 				navigation.selectedPosition++;
 			}
-		}
-		else if (!navigation.next) {
+		} else if (!navigation.next) {
 			navigation.next = key;
 		}
 
@@ -483,18 +487,10 @@ export default class TreePane extends ThemedBase<TreePaneProperties> {
 			start: 0,
 			end: 0
 		};
-		const {
-			_navigation,
-			_scrollPosition,
-			properties: {
-				expanded = [],
-				root,
-				showRoot
-			}
-		} = this;
+		const { _navigation, _scrollPosition, properties: { expanded = [], root, showRoot } } = this;
 		const children: (WNode<Row> | null)[] = [];
-		const start = _navigation.start = _scrollPosition ? _scrollPosition - 1 : 0;
-		const end = _navigation.end = start + visibleRowCount + 2;
+		const start = (_navigation.start = _scrollPosition ? _scrollPosition - 1 : 0);
+		const end = (_navigation.end = start + visibleRowCount + 2);
 		let rowCount = 0;
 
 		const addChildren = (items: TreePaneItem[], level: number) => {
@@ -508,66 +504,65 @@ export default class TreePane extends ThemedBase<TreePaneProperties> {
 		};
 
 		if (root) {
-			addChildren(showRoot ? [ root ] : root.children || [], 1);
+			addChildren(showRoot ? [root] : root.children || [], 1);
 		}
 
 		return children;
 	}
 
 	public render() {
-		const {
-			_onScrollbarScroll,
-			_scrollPosition,
-			_scrollVisible,
-			properties: {
-				key,
-				label,
-				theme
-			}
-		} = this;
+		const { _onScrollbarScroll, _scrollPosition, _scrollVisible, properties: { key, label, theme } } = this;
 
 		const delta = this.meta(Drag).get('rows').delta.y;
 		if (delta) {
-			this._onPositionUpdate((delta - (delta * 2)) / ROW_HEIGHT, false);
+			this._onPositionUpdate((delta - delta * 2) / ROW_HEIGHT, false);
 		}
 
-		const top =  0 - (_scrollPosition % ROW_HEIGHT);
+		const top = 0 - _scrollPosition % ROW_HEIGHT;
 		const visibleRowCount = this._getVisibleRowCount();
 		const rows = this._renderChildren(visibleRowCount);
-		const sliderSize = this._sliderSize = visibleRowCount > rows.length ? rows.length : visibleRowCount;
-		const size = this._size = rows.length;
+		const sliderSize = (this._sliderSize = visibleRowCount > rows.length ? rows.length : visibleRowCount);
+		const size = (this._size = rows.length);
 
-		return v('div', {
-			'aria-hidden': false,
-			'aria-label': label,
-			classes: this.theme(css.root),
-			key,
-			role: 'tree',
+		return v(
+			'div',
+			{
+				'aria-hidden': false,
+				'aria-label': label,
+				classes: this.theme(css.root),
+				key,
+				role: 'tree',
 
-			onmouseenter: this._onmouseenter,
-			onmouseleave: this._onmouseleave
-		}, [
-			v('div', {
-				classes: this.theme(css.scroll),
-				key: 'rows',
-				role: 'presentation',
-				styles: {
-					top: `${top}px`
-				},
-				tabIndex: 0,
+				onmouseenter: this._onmouseenter,
+				onmouseleave: this._onmouseleave
+			},
+			[
+				v(
+					'div',
+					{
+						classes: this.theme(css.scroll),
+						key: 'rows',
+						role: 'presentation',
+						styles: {
+							top: `${top}px`
+						},
+						tabIndex: 0,
 
-				onkeydown: this._onkeydown,
-				onwheel: this._onwheel
-			}, rows),
-			w(Scrollbar, {
-				position: _scrollPosition,
-				size,
-				sliderSize,
-				visible: _scrollVisible,
-				theme,
+						onkeydown: this._onkeydown,
+						onwheel: this._onwheel
+					},
+					rows
+				),
+				w(Scrollbar, {
+					position: _scrollPosition,
+					size,
+					sliderSize,
+					visible: _scrollVisible,
+					theme,
 
-				onScroll: _onScrollbarScroll
-			})
-		]);
+					onScroll: _onScrollbarScroll
+				})
+			]
+		);
 	}
 }

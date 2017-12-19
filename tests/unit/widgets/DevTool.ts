@@ -11,17 +11,29 @@ describe('DevTool', () => {
 	it('should render no diagnostics available by default', () => {
 		const widget = harness(DevTool);
 		widget.expectRender(
-			v('div', {
-				classes: devtoolCss.noapi,
-				key: 'noapi'
-			}, [
-				v('div', {
-					classes: devtoolCss.banner
-				}, [ 'No Dojo 2 diagnostics detected']),
-				w(Button, {
-					onClick: widget.listener
-				}, [ 'Refresh' ])
-			])
+			v(
+				'div',
+				{
+					classes: devtoolCss.noapi,
+					key: 'noapi'
+				},
+				[
+					v(
+						'div',
+						{
+							classes: devtoolCss.banner
+						},
+						['No Dojo 2 diagnostics detected']
+					),
+					w(
+						Button,
+						{
+							onClick: widget.listener
+						},
+						['Refresh']
+					)
+				]
+			)
 		);
 	});
 });

@@ -3,6 +3,7 @@
 .root {
 	flex: 1;
 	padding: var(--spacing-regular) 0;
+	overflow-x: hidden;
 	overflow-y: scroll;
 }
 
@@ -27,10 +28,12 @@
 }
 
 .item {
+	box-sizing: border-box;
+	width: 100%;
+	overflow: hidden;
 	font-size: 11px;
 	line-height: 13px;
 	font-family: Menlo, monospace;
-	text-overflow: ellipsis;
 	white-space: nowrap;
 	display: flex;
 	padding: 2px;
@@ -47,7 +50,7 @@
 	text-overflow: ellipsis;
 	overflow: hidden;
 	flex-shrink: 1;
-	flex-basis: 16em;
+	flex-basis: 12em;
 	flex-grow: 1;
 }
 
@@ -55,9 +58,8 @@
 	margin-left: 1em;
 	padding-left: 2px;
 	text-overflow: ellipsis;
-	position: relative;
-	display: flex;
+	overflow: hidden;
 	flex-shrink: 0;
-	flex-basis: 5em;
+	flex-basis: 6em;
 	flex-grow: 10;
 }

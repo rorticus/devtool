@@ -77,11 +77,13 @@
 .tabs {
 	flex: 1;
 	display: flex;
+	width: 100%;
 }
 
 .tab {
 	flex: 1;
 	display: flex;
+	width: 100%;
 }
 
 .alignLeft .tabs {

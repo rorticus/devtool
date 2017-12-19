@@ -6,21 +6,21 @@ import ThemedMixin, { theme, ThemedProperties } from '@dojo/widget-core/mixins/T
 import Button from '@dojo/widgets/button/Button';
 import Tab from '@dojo/widgets/tabcontroller/Tab';
 import TabController from '@dojo/widgets/tabcontroller/TabController';
-import { getLastRender, highlight, getProjectors, getEventLog } from '../diagnostics';
+import { getLastRender, highlight, getProjectors, getEventLog, getStores, getStoreState } from '../diagnostics';
 import ActionBar, { ActionBarButton } from './ActionBar';
 import EventLog from './EventLog';
 import ItemList from './ItemList';
 import VDom from './VDom';
+import { DevToolState } from '../state/interfaces';
 
 import devToolTheme from '../themes/devtool/index';
 
 import * as devtoolCss from './styles/devtool.m.css';
 import * as icons from './styles/icons.m.css';
-import { DiagnosticAPI } from '@dojo/diagnostics/main';
 
 export const ThemedBase = ThemedMixin(WidgetBase);
 
-type CurrentNode = { children?: CurrentNode[], rendered?: CurrentNode[] } | undefined | null | string;
+type CurrentNode = { children?: CurrentNode[]; rendered?: CurrentNode[] } | undefined | null | string;
 
 function findDNode(root: SerializedDNode, path: string): SerializedDNode {
 	const segments = path.split('/');
@@ -28,19 +28,33 @@ function findDNode(root: SerializedDNode, path: string): SerializedDNode {
 	if (!segments.length) {
 		return;
 	}
-	let current: CurrentNode = { children: [ root ] };
+	let current: CurrentNode = { children: [root] };
 	while (segments.length) {
 		if (!current || typeof current === 'string' || (!current.rendered && !current.children)) {
 			return;
 		}
 		const index = Number(segments.shift());
-		current = current.rendered && current.rendered[index] || current.children![index];
+		current = (current.rendered && current.rendered[index]) || current.children![index];
 	}
 	return current as SerializedDNode;
 }
 
 export interface DevToolProperties extends ThemedProperties {
-	apiVersion?: string;
+	activeIndex: DevToolState['interface']['activeIndex'];
+	apiVersion: DevToolState['interface']['apiVersion'];
+	eventLog: DevToolState['eventLog'];
+	projectors: DevToolState['projectors'];
+	render: DevToolState['render'];
+	selectedDNode: DevToolState['interface']['selectedDNode'];
+	selectedEventId: DevToolState['interface']['selectedEventId'];
+	setActiveIndex(index: DevToolState['interface']['activeIndex']): void;
+	setEventLog(eventLog: DevToolState['eventLog']): void;
+	setProjectors(projectos: DevToolState['projectors']): void;
+	setRender(render: DevToolState['render']): void;
+	setSelectedDNode(node: DevToolState['interface']['selectedDNode']): void;
+	setSelectedEventId(id: DevToolState['interface']['selectedEventId']): void;
+	setView(view: DevToolState['interface']['view']): void;
+	view: DevToolState['interface']['view'];
 
 	onCheckVersion?(): void;
 }
@@ -48,14 +62,6 @@ export interface DevToolProperties extends ThemedProperties {
 @theme(devtoolCss)
 @theme(icons)
 export class DevTool extends ThemedBase<DevToolProperties> {
-	private _activeIndex = 0;
-	private _dnode?: SerializedDNode;
-	private _eventLog?: DiagnosticAPI['eventLog'];
-	private _projectors?: string[];
-	private _selectedId?: string;
-	private _selectedEventId?: number;
-	private _view?: 'vdom' | 'logs';
-
 	private _listValueFormat(value: any, key: string) {
 		if ((key === 'innerRender' || key === 'outerRender') && typeof value === 'number') {
 			return value.toFixed(2);
@@ -63,35 +69,29 @@ export class DevTool extends ThemedBase<DevToolProperties> {
 		return String(value);
 	}
 
-	private _onEventLogSelect(index: number) {
-		this._selectedEventId = index;
-		this.invalidate();
-	}
-
 	private async _onLastRenderClick() {
+		const { projectors, setProjectors, setRender, setView } = this.properties;
 		try {
-			if (!this._projectors) {
-				this._projectors = await getProjectors();
+			let localProjectors = projectors;
+			if (!localProjectors) {
+				setProjectors((localProjectors = await getProjectors()));
 			}
-			this._dnode = await getLastRender(this._projectors[0]);
-		}
-		catch (e) {
-			this._dnode = undefined;
+			setRender(await getLastRender(localProjectors[0]));
+		} catch (e) {
+			setRender(undefined);
 			console.error(e);
 		}
-		this._view = 'vdom';
-		this.invalidate();
+		setView('vdom');
 	}
 
 	private async _onLogsClick() {
+		const { setEventLog, setView } = this.properties;
 		try {
-			this._eventLog = await getEventLog();
-		}
-		catch (e) {
+			setEventLog(await getEventLog());
+		} catch (e) {
 			console.error();
 		}
-		this._view = 'logs';
-		this.invalidate();
+		setView('logs');
 	}
 
 	private _onRefreshClick() {
@@ -99,89 +99,128 @@ export class DevTool extends ThemedBase<DevToolProperties> {
 		onCheckVersion && onCheckVersion();
 	}
 
-	private _onRequestTabChange(index: number) {
-		this._activeIndex = index;
-		this.invalidate();
+	private async _onStoreClick() {
+		console.log(await getStores());
+		console.log(await getStoreState('store_1'));
 	}
 
 	private _onVDomSelect(id: string) {
-		if (this._projectors) {
-			highlight(this._projectors[0], id);
+		const { projectors, setSelectedDNode } = this.properties;
+		if (projectors) {
+			highlight(projectors[0], id);
 		}
-		this._selectedId = id;
+		setSelectedDNode(id);
 	}
 
 	private _renderLeft() {
-		const { _dnode: root, _eventLog: eventLog, _selectedEventId: selected, _view } = this;
-		const left = v('div', {
-			classes: this.theme(devtoolCss.left)
-		}, [
-			v('div', {
-				classes: this.theme(devtoolCss.leftHeader)
-			}, [
-				v('span', {
-					classes: this.theme(devtoolCss.leftTitle)
-				}, [
-					_view && _view === 'logs' ? 'Event Logs' : _view ? 'Last Render' : 'Dojo 2 Development Tool'
-				]),
-				w(ActionBar, {
-					label: 'Actionbar Actions'
-				}, [
-					w(ActionBarButton, {
-						iconClass: this.theme(icons.render),
-						key: 'lastRender',
-						label: 'Display Last Render',
-						onClick: this._onLastRenderClick
-					}),
-					w(ActionBarButton, {
-						iconClass: this.theme(icons.logs),
-						key: 'logs',
-						label: 'Display Event Logs',
-						onClick: this._onLogsClick
+		const { eventLog, render: root, selectedEventId: selected, setSelectedEventId, view } = this.properties;
+		const left = v(
+			'div',
+			{
+				classes: this.theme(devtoolCss.left)
+			},
+			[
+				v(
+					'div',
+					{
+						classes: this.theme(devtoolCss.leftHeader)
+					},
+					[
+						v(
+							'span',
+							{
+								classes: this.theme(devtoolCss.leftTitle)
+							},
+							[view && view === 'logs' ? 'Event Logs' : view ? 'Last Render' : 'Dojo 2 Development Tool']
+						),
+						w(
+							ActionBar,
+							{
+								label: 'Actionbar Actions'
+							},
+							[
+								w(ActionBarButton, {
+									iconClass: this.theme(icons.render),
+									key: 'lastRender',
+									label: 'Display Last Render',
+									onClick: this._onLastRenderClick
+								}),
+								w(ActionBarButton, {
+									iconClass: this.theme(icons.logs),
+									key: 'logs',
+									label: 'Display Event Logs',
+									onClick: this._onLogsClick
+								}),
+								w(ActionBarButton, {
+									iconClass: this.theme(icons.stores),
+									key: 'store',
+									label: 'Display Store State',
+									onClick: this._onStoreClick
+								})
+							]
+						)
+					]
+				)
+			]
+		);
+		const viewDom =
+			view && view === 'logs'
+				? w(EventLog, {
+						key: 'eventLog',
+						eventLog,
+						selected,
+						onSelect: setSelectedEventId
 					})
-				])
-			])
-		]);
-		const view = _view && _view === 'logs' ? w(EventLog, {
-			key: 'eventLog',
-			eventLog,
-			selected,
-			onSelect: this._onEventLogSelect
-		}) : w(VDom, {
-			key: 'vdom',
-			root,
-			onSelect: this._onVDomSelect
-		});
-		left.children!.push(view);
+				: w(VDom, {
+						key: 'vdom',
+						root,
+						onSelect: this._onVDomSelect
+					});
+		left.children!.push(viewDom);
 		return left;
 	}
 
 	private _renderRight() {
-		const { _activeIndex: activeIndex, _dnode, _eventLog, _selectedEventId, _selectedId, _view } = this;
-		const selected = _dnode && _selectedId ? findDNode(_dnode, _selectedId) : undefined;
-		const items = _view && _view === 'logs' ?
-			_eventLog && _selectedEventId !== undefined ? _eventLog[_selectedEventId].data : undefined :
-			selected && typeof selected !== 'string' ? selected.properties : undefined;
-		return v('div', {
-			classes: this.theme(devtoolCss.right)
-		}, [
-			w(TabController, {
-				activeIndex,
-				onRequestTabChange: this._onRequestTabChange
-			}, [
-				items ? w(Tab, {
-					key: 'properties',
-					label: 'Properties',
-					// TODO: Remove when https://github.com/dojo/widgets/issues/400 resolved
-					theme: devToolTheme
-				}, [
-					w(ItemList, {
-						items,
-						valueFormatter: this._listValueFormat
-					})
-				]) : null
-			])
-		]);
+		const { activeIndex, eventLog, render, selectedDNode, selectedEventId, setActiveIndex, view } = this.properties;
+		const selected = render && selectedDNode ? findDNode(render, selectedDNode) : undefined;
+		const items =
+			view && view === 'logs'
+				? eventLog && selectedEventId !== undefined ? eventLog[selectedEventId].data : undefined
+				: selected && typeof selected !== 'string' ? selected.properties : undefined;
+		return v(
+			'div',
+			{
+				classes: this.theme(devtoolCss.right)
+			},
+			[
+				w(
+					TabController,
+					{
+						activeIndex,
+						onRequestTabChange: setActiveIndex
+					},
+					[
+						items
+							? w(
+									Tab,
+									{
+										key: 'properties',
+										label: 'Properties',
+										// TODO: Remove when https://github.com/dojo/widgets/issues/400 resolved
+										theme: devToolTheme
+									},
+									[
+										w(ItemList, {
+											items,
+											valueFormatter: this._listValueFormat
+										})
+									]
+								)
+							: null
+					]
+				)
+			]
+		);
 	}
 
 	protected render(): DNode {
@@ -189,31 +228,48 @@ export class DevTool extends ThemedBase<DevToolProperties> {
 
 		/* If we can't detect the diagnostics, we will render the No API message */
 		if (!apiVersion) {
-			return v('div', {
-				classes: this.theme(devtoolCss.noapi),
-				key: 'noapi'
-			}, [
-				v('div', {
-					classes: this.theme(devtoolCss.banner)
-				}, [ 'No Dojo 2 diagnostics detected']),
-				w(Button, {
-					onClick: this._onRefreshClick
-				}, [ 'Refresh' ])
-			]);
+			return v(
+				'div',
+				{
+					classes: this.theme(devtoolCss.noapi),
+					key: 'noapi'
+				},
+				[
+					v(
+						'div',
+						{
+							classes: this.theme(devtoolCss.banner)
+						},
+						['No Dojo 2 diagnostics detected']
+					),
+					w(
+						Button,
+						{
+							onClick: this._onRefreshClick
+						},
+						['Refresh']
+					)
+				]
+			);
 		}
 
-		return v('div', {
-			classes: this.theme(devtoolCss.root),
-			key: 'root'
-		}, [
-			v('div', {
-				classes: this.theme(devtoolCss.content),
-				key: 'content'
-			}, [
-				this._renderLeft(),
-				this._renderRight()
-			])
-		]);
+		return v(
+			'div',
+			{
+				classes: this.theme(devtoolCss.root),
+				key: 'root'
+			},
+			[
+				v(
+					'div',
+					{
+						classes: this.theme(devtoolCss.content),
+						key: 'content'
+					},
+					[this._renderLeft(), this._renderRight()]
+				)
+			]
+		);
 	}
 }
 

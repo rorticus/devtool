@@ -15,44 +15,68 @@ export const ThemedBase = ThemedMixin(WidgetBase);
 export class ItemList extends ThemedBase<PropertiesListProperties> {
 	private _renderProperties(): DNode[] | undefined {
 		const { items, valueFormatter } = this.properties;
-		const keys = items && Object.keys(items).sort() || [];
+		const keys = (items && Object.keys(items).sort()) || [];
 		if (!items || !keys.length) {
 			return [
-				v('div', {
-					classes: this.theme(itemListCss.empty)
-				}, [
-					v('p', { }, [ 'empty' ])
-				])
+				v(
+					'div',
+					{
+						classes: this.theme(itemListCss.empty)
+					},
+					[v('p', {}, ['empty'])]
+				)
 			];
 		}
 		const children: DNode[] = [];
 		for (let i = 0; i < keys.length; i++) {
 			const key = keys[i];
-			children.push(v('li', {
-				classes: this.theme(itemListCss.item),
-				key
-			}, [
-				v('span', {
-					classes: this.theme(itemListCss.key),
-					key: 'key'
-				}, [ key ]),
-				v('span', {
-					classes: this.theme(itemListCss.value),
-					key: 'value'
-				}, [ valueFormatter && valueFormatter(items[key], key, items) || String(items[key]) ])
-			]));
+			children.push(
+				v(
+					'li',
+					{
+						classes: this.theme(itemListCss.item),
+						key
+					},
+					[
+						v(
+							'span',
+							{
+								classes: this.theme(itemListCss.key),
+								key: 'key'
+							},
+							[key]
+						),
+						v(
+							'span',
+							{
+								classes: this.theme(itemListCss.value),
+								key: 'value'
+							},
+							[(valueFormatter && valueFormatter(items[key], key, items)) || String(items[key])]
+						)
+					]
+				)
+			);
 		}
 		return [
-			v('ol', {
-				classes: this.theme(itemListCss.list)
-			}, children)
+			v(
+				'ol',
+				{
+					classes: this.theme(itemListCss.list)
+				},
+				children
+			)
 		];
 	}
 
 	protected render() {
-		return v('div', {
-			classes: this.theme(itemListCss.root)
-		}, this._renderProperties());
+		return v(
+			'div',
+			{
+				classes: this.theme(itemListCss.root)
+			},
+			this._renderProperties()
+		);
 	}
 }
 
