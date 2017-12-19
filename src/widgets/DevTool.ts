@@ -6,10 +6,11 @@ import ThemedMixin, { theme, ThemedProperties } from '@dojo/widget-core/mixins/T
 import Button from '@dojo/widgets/button/Button';
 import Tab from '@dojo/widgets/tabcontroller/Tab';
 import TabController from '@dojo/widgets/tabcontroller/TabController';
-import { getLastRender, highlight, getProjectors, getEventLog, getStores, getStoreState } from '../diagnostics';
+import { getLastRender, highlight, getProjectors, getEventLog } from '../diagnostics';
 import ActionBar, { ActionBarButton } from './ActionBar';
 import EventLog from './EventLog';
 import ItemList from './ItemList';
+import StoreState from './StoreState';
 import VDom from './VDom';
 import { DevToolState } from '../state/interfaces';
 
@@ -42,8 +43,10 @@ function findDNode(root: SerializedDNode, path: string): SerializedDNode {
 export interface DevToolProperties extends ThemedProperties {
 	activeIndex: DevToolState['interface']['activeIndex'];
 	apiVersion: DevToolState['interface']['apiVersion'];
+	diagnostics: DevToolState['diagnostics'];
 	eventLog: DevToolState['eventLog'];
 	projectors: DevToolState['projectors'];
+	refreshDiagnostics(): Promise<void>;
 	render: DevToolState['render'];
 	selectedDNode: DevToolState['interface']['selectedDNode'];
 	selectedEventId: DevToolState['interface']['selectedEventId'];
@@ -100,8 +103,9 @@ export class DevTool extends ThemedBase<DevToolProperties> {
 	}
 
 	private async _onStoreClick() {
-		console.log(await getStores());
-		console.log(await getStoreState('store_1'));
+		const { refreshDiagnostics, setView } = this.properties;
+		refreshDiagnostics();
+		setView('store');
 	}
 
 	private _onVDomSelect(id: string) {
@@ -113,7 +117,14 @@ export class DevTool extends ThemedBase<DevToolProperties> {
 	}
 
 	private _renderLeft() {
-		const { eventLog, render: root, selectedEventId: selected, setSelectedEventId, view } = this.properties;
+		const {
+			diagnostics,
+			eventLog,
+			render: root,
+			selectedEventId: selected,
+			setSelectedEventId,
+			view
+		} = this.properties;
 		const left = v(
 			'div',
 			{
@@ -163,19 +174,30 @@ export class DevTool extends ThemedBase<DevToolProperties> {
 				)
 			]
 		);
-		const viewDom =
-			view && view === 'logs'
-				? w(EventLog, {
-						key: 'eventLog',
-						eventLog,
-						selected,
-						onSelect: setSelectedEventId
-					})
-				: w(VDom, {
-						key: 'vdom',
-						root,
-						onSelect: this._onVDomSelect
-					});
+		let viewDom: DNode = null;
+		switch (view) {
+			case 'logs':
+				viewDom = w(EventLog, {
+					key: 'eventLog',
+					eventLog,
+					selected,
+					onSelect: setSelectedEventId
+				});
+				break;
+			case 'vdom':
+				viewDom = w(VDom, {
+					key: 'vdom',
+					root,
+					onSelect: this._onVDomSelect
+				});
+				break;
+			case 'store':
+				console.log(diagnostics.storeState);
+				viewDom = w(StoreState, {
+					key: 'store'
+				});
+				break;
+		}
 		left.children!.push(viewDom);
 		return left;
 	}

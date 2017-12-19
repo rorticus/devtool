@@ -4,8 +4,10 @@ import Store from '@dojo/stores/Store';
 
 export interface Diagnostics {
 	eventLog: DiagnosticAPI['eventLog'];
-	projectors?: string[];
+	projectors: string[];
 	lastRender: SerializedDNode;
+	stores: string[];
+	storeState: any;
 }
 
 export interface InterfaceState {

@@ -1,4 +1,5 @@
 import Container from '@dojo/widget-core/Container';
+import { refresh } from '../diagnostics';
 import { DevToolStore } from '../state/interfaces';
 
 import DevTool, { DevToolProperties } from '../widgets/DevTool';
@@ -17,8 +18,12 @@ function getProperties(store: DevToolStore): DevToolProperties {
 	return {
 		activeIndex: get(path('interface', 'activeIndex')),
 		apiVersion: get(path('interface', 'apiVersion')),
+		diagnostics: get(path('diagnostics')),
 		eventLog: get(path('eventLog')),
 		projectors: get(path('projectors')),
+		refreshDiagnostics() {
+			return refresh(store);
+		},
 		render: get(path('render')),
 		selectedDNode: get(path('interface', 'selectedDNode')),
 		selectedEventId: get(path('interface', 'selectedEventId')),

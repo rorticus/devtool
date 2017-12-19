@@ -1,6 +1,6 @@
 import { DiagnosticAPI } from '@dojo/diagnostics/main';
 import { SerializedDNode } from '@dojo/diagnostics/serializeDNode';
-import { DevToolStore } from './state/interfaces';
+import { DevToolStore, Diagnostics } from './state/interfaces';
 import { setDiagnosticsProcess } from './state/processes';
 
 declare const browser: typeof chrome;
@@ -72,10 +72,13 @@ export function unhighlight(): Promise<void> {
 export async function refresh(store: DevToolStore) {
 	const setDiagnostics = setDiagnosticsProcess(store);
 	const projectors = await getProjectors();
-	const diagnostics = {
+	const stores = await getStores();
+	const diagnostics: Diagnostics = {
 		eventLog: await getEventLog(),
 		projectors,
-		lastRender: projectors.length ? await getLastRender(projectors[0]) : undefined
+		lastRender: projectors.length ? await getLastRender(projectors[0]) : undefined,
+		stores,
+		storeState: stores.length ? await getStoreState(stores[0]) : undefined
 	};
 	setDiagnostics(diagnostics as any);
 }

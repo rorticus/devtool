@@ -26,7 +26,7 @@
   },
   "homepage": "https://github.com/dojo/devtool#readme",
   "files": [
-    "dist",
+    "output/dist",
     "img",
     "devtools.html",
     "devtools.js",
@@ -35,7 +35,7 @@
     "README.md"
   ],
   "devDependencies": {
-    "@dojo/cli-build-webpack": "^0.2.2",
+    "@dojo/cli-build-app": "file:deps/dojo-cli-build-app-0.1.0-rc.1.tgz",
     "@dojo/cli-test-intern": "^0.2.1",
     "@dojo/core": "~0.2.1",
     "@dojo/diagnostics": "file:deps/dojo-diagnostics-0.1.0-rc.1.tgz",
