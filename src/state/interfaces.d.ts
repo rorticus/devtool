@@ -20,10 +20,7 @@ export interface InterfaceState {
 
 export interface DevToolState {
 	diagnostics: Diagnostics;
-	eventLog?: DiagnosticAPI['eventLog'];
 	interface: InterfaceState;
-	projectors?: string[];
-	render: SerializedDNode;
 }
 
 export type DevToolStore = Store<DevToolState>;

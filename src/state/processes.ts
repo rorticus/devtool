@@ -1,33 +1,17 @@
 import { createProcess } from '@dojo/stores/process';
-import {
-	initCommand,
-	setApiVersionCommand,
-	setActiveIndexCommand,
-	setDiagnosticsCommand,
-	setEventLogCommand,
-	setProjectorsCommand,
-	setRenderCommand,
-	setSelectedDNodeCommand,
-	setSelectedEventIdCommand,
-	setViewCommand
-} from './commands';
+import { initCommand, refreshDiagnosticsCommand, setInterfacePropertyCommand } from './commands';
 
+/**
+ * Initialise the state of the store
+ */
 export const initProcess = createProcess([initCommand]);
 
-export const setActiveIndexProcess = createProcess([setActiveIndexCommand]);
+/**
+ * Read the diagnostic information and update the state store
+ */
+export const refreshDiagnosticsProcess = createProcess([refreshDiagnosticsCommand]);
 
-export const setApiVersionProcess = createProcess([setApiVersionCommand]);
-
-export const setDiagnosticsProcess = createProcess([setDiagnosticsCommand]);
-
-export const setEventLogProcess = createProcess([setEventLogCommand]);
-
-export const setProjectorsProcess = createProcess([setProjectorsCommand]);
-
-export const setRenderProcess = createProcess([setRenderCommand]);
-
-export const setSelectedDNodeProcess = createProcess([setSelectedDNodeCommand]);
-
-export const setSelectedEventIdProcess = createProcess([setSelectedEventIdCommand]);
-
-export const setViewProcess = createProcess([setViewCommand]);
+/**
+ * Set a property of the interface state in the state store
+ */
+export const setInterfacePropertyProcess = createProcess([setInterfacePropertyCommand]);

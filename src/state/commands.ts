@@ -1,54 +1,46 @@
 import { createCommandFactory } from '@dojo/stores/process';
 import { add, replace } from '@dojo/stores/state/operations';
 import { DevToolState } from './interfaces';
+import { getEventLog, getLastRender, getProjectors, getStores, getStoreState } from '../diagnostics';
 
 export const createCommand = createCommandFactory<DevToolState>();
 
 export const initCommand = createCommand(({ path }) => {
 	return [
-		add(path('eventLog'), undefined),
+		add(path('diagnostics'), {
+			eventLog: [],
+			projectors: [],
+			lastRender: undefined,
+			stores: [],
+			storeState: undefined
+		}),
 		add(path('interface'), {
 			activeIndex: 0,
 			apiVersion: undefined,
 			view: undefined
-		}),
-		add(path('projectors'), undefined),
-		add(path('render'), undefined)
+		})
 	];
 });
 
-export const setApiVersionCommand = createCommand(({ payload: [apiVersion], path }) => {
-	return [replace(path('interface', 'apiVersion'), apiVersion)];
-});
-
-export const setActiveIndexCommand = createCommand(({ payload: [activeIndex], path }) => {
-	return [replace(path('interface', 'activeIndex'), activeIndex)];
-});
-
-export const setDiagnosticsCommand = createCommand(({ payload: [diagnostics], path }) => {
+/**
+ * Update the
+ */
+export const refreshDiagnosticsCommand = createCommand(async ({ path }) => {
+	const projectors = await getProjectors();
+	const stores = await getStores();
+	const diagnostics: DevToolState['diagnostics'] = {
+		eventLog: await getEventLog(),
+		projectors,
+		lastRender: projectors.length ? await getLastRender(projectors[0]) : undefined,
+		stores,
+		storeState: stores.length ? await getStoreState(stores[0]) : undefined
+	};
 	return [replace(path('diagnostics'), diagnostics)];
 });
 
-export const setEventLogCommand = createCommand(({ payload: [eventLog], path }) => {
-	return [replace(path('eventLog'), eventLog)];
-});
-
-export const setProjectorsCommand = createCommand(({ payload: [projectors], path }) => {
-	return [replace(path('projectors'), projectors)];
-});
-
-export const setRenderCommand = createCommand(({ payload: [render], path }) => {
-	return [replace(path('render'), render)];
-});
-
-export const setSelectedDNodeCommand = createCommand(({ payload: [selectedDNode], path }) => {
-	return [replace(path('interface', 'selectedDNode'), selectedDNode)];
-});
-
-export const setSelectedEventIdCommand = createCommand(({ payload: [selectedEventId], path }) => {
-	return [replace(path('interface', 'selectedEventId'), selectedEventId)];
-});
-
-export const setViewCommand = createCommand(({ payload: [view], path }) => {
-	return [replace(path('interface', 'view'), view)];
+/**
+ * Set a property of the interface state
+ */
+export const setInterfacePropertyCommand = createCommand(({ payload: [key, value], path }) => {
+	return [replace(path('interface', key), value)];
 });
