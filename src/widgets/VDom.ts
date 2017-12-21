@@ -1,5 +1,4 @@
 import { SerializedDNode } from '@dojo/diagnostics/serializeDNode';
-import { includes } from '@dojo/shim/array';
 import { v, w } from '@dojo/widget-core/d';
 import { auto } from '@dojo/widget-core/diff';
 import { DNode } from '@dojo/widget-core/interfaces';
@@ -10,10 +9,12 @@ import TreePane, { TreePaneItem } from './TreePane';
 import * as vdomCss from './styles/vdom.m.css';
 
 export interface VDomProperties extends ThemedProperties {
+	expanded?: string[];
 	root?: SerializedDNode;
 	selected?: string;
 
-	onSelect?(id: string): void;
+	onItemSelect?(id: string): void;
+	onItemToggle?(id: string): void;
 }
 
 function createTreePaneItem(
@@ -30,7 +31,6 @@ export const ThemedBase = ThemedMixin(WidgetBase);
 
 @theme(vdomCss)
 export class VDom extends ThemedBase<VDomProperties> {
-	private _expanded: string[] = [];
 	private _root: TreePaneItem | undefined;
 
 	private _mapNodes(node: SerializedDNode, path: string = '', index: number = 0): TreePaneItem {
@@ -82,21 +82,6 @@ export class VDom extends ThemedBase<VDomProperties> {
 		return createTreePaneItem(id, label, `Widget - ${id}`, this.theme(vdomCss.wnode), children);
 	}
 
-	private _onItemSelect(id: string) {
-		const { onSelect } = this.properties;
-		onSelect && onSelect(id);
-	}
-
-	private _onItemToggle(id: string) {
-		const { _expanded } = this;
-		if (includes(_expanded, id)) {
-			_expanded.splice(_expanded.indexOf(id), 1);
-		} else {
-			_expanded.push(id);
-		}
-		this.invalidate();
-	}
-
 	@diffProperty('root', auto)
 	protected onRootChange(): void {
 		this._root = undefined;
@@ -106,7 +91,7 @@ export class VDom extends ThemedBase<VDomProperties> {
 		if (this.properties.root && !this._root) {
 			this._root = this._mapNodes(this.properties.root);
 		}
-		const { _expanded: expanded, _root: root, properties: { selected } } = this;
+		const { _root: root, properties: { expanded, selected, onItemSelect, onItemToggle } } = this;
 		return root
 			? w(TreePane, {
 					expanded,
@@ -114,8 +99,8 @@ export class VDom extends ThemedBase<VDomProperties> {
 					selected,
 					showRoot: true,
 					toggleOnArrowClick: true,
-					onItemSelect: this._onItemSelect,
-					onItemToggle: this._onItemToggle
+					onItemSelect,
+					onItemToggle
 				})
 			: null;
 	}

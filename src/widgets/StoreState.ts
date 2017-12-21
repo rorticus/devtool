@@ -1,4 +1,3 @@
-import { includes } from '@dojo/shim/array';
 import { v, w } from '@dojo/widget-core/d';
 import { auto } from '@dojo/widget-core/diff';
 import { DNode } from '@dojo/widget-core/interfaces';
@@ -9,9 +8,12 @@ import TreePane, { TreePaneItem } from './TreePane';
 import * as storestateCss from './styles/storestate.m.css';
 
 export interface StoreStateProperties extends ThemedProperties {
+	expanded?: string[];
 	selected?: string;
 	state?: object;
-	onSelect?(id: string): void;
+
+	onItemSelect?(id: string): void;
+	onItemToggle?(id: string): void;
 }
 
 const ThemedBase = ThemedMixin(WidgetBase);
@@ -28,7 +30,6 @@ function createTreePaneItem(
 
 @theme(storestateCss)
 export class StoreState extends ThemedBase<StoreStateProperties> {
-	private _expanded: string[] = [];
 	private _root?: TreePaneItem;
 
 	private _getChild(
@@ -137,21 +138,6 @@ export class StoreState extends ThemedBase<StoreStateProperties> {
 		);
 	}
 
-	private _onItemSelect(id: string) {
-		const { onSelect } = this.properties;
-		onSelect && onSelect(id);
-	}
-
-	private _onItemToggle(id: string) {
-		const { _expanded } = this;
-		if (includes(_expanded, id)) {
-			_expanded.splice(_expanded.indexOf(id), 1);
-		} else {
-			_expanded.push(id);
-		}
-		this.invalidate();
-	}
-
 	@diffProperty('root', auto)
 	protected onRootChange(): void {
 		this._root = undefined;
@@ -162,7 +148,7 @@ export class StoreState extends ThemedBase<StoreStateProperties> {
 		if (state && !this._root) {
 			this._root = this._mapObject(state, '/');
 		}
-		const { _expanded: expanded, _root: root, properties: { selected } } = this;
+		const { _root: root, properties: { expanded, selected, onItemSelect, onItemToggle } } = this;
 		return root
 			? w(TreePane, {
 					expanded,
@@ -171,8 +157,8 @@ export class StoreState extends ThemedBase<StoreStateProperties> {
 					showRoot: true,
 					toggleOnArrowClick: true,
 
-					onItemSelect: this._onItemSelect,
-					onItemToggle: this._onItemToggle
+					onItemSelect,
+					onItemToggle
 				})
 			: null;
 	}

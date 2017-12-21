@@ -13,6 +13,8 @@ export interface Diagnostics {
 export interface InterfaceState {
 	activeIndex: number;
 	apiVersion?: string;
+	expandedDNodes: string[];
+	expandedStateNodes: string[];
 	selectedDNode?: string;
 	selectedEventId?: number;
 	selectedStateNode?: string;

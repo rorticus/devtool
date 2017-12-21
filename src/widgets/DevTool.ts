@@ -1,4 +1,5 @@
 import { SerializedDNode } from '@dojo/diagnostics/serializeDNode';
+import { includes } from '@dojo/shim/array';
 import { ProcessError, ProcessResult } from '@dojo/stores/process';
 import { v, w } from '@dojo/widget-core/d';
 import { DNode } from '@dojo/widget-core/interfaces';
@@ -134,13 +135,13 @@ export class DevTool extends ThemedBase<DevToolProperties> {
 
 	private async _onLastRenderClick() {
 		const { refreshDiagnostics, setInterfaceProperty } = this.properties;
-		refreshDiagnostics();
+		await refreshDiagnostics();
 		setInterfaceProperty('view', 'vdom');
 	}
 
 	private async _onLogsClick() {
 		const { refreshDiagnostics, setInterfaceProperty } = this.properties;
-		refreshDiagnostics();
+		await refreshDiagnostics();
 		setInterfaceProperty('view', 'logs');
 	}
 
@@ -159,6 +160,17 @@ export class DevTool extends ThemedBase<DevToolProperties> {
 		setInterfaceProperty('selectedStateNode', id);
 	}
 
+	private _onStateToggle(id: string) {
+		const { interface: { expandedStateNodes }, setInterfaceProperty } = this.properties;
+
+		if (includes(expandedStateNodes, id)) {
+			expandedStateNodes.splice(expandedStateNodes.indexOf(id), 1);
+		} else {
+			expandedStateNodes.push(id);
+		}
+		setInterfaceProperty('expandedStateNodes', expandedStateNodes);
+	}
+
 	private async _onStoreClick() {
 		const { refreshDiagnostics, setInterfaceProperty } = this.properties;
 		await refreshDiagnostics();
@@ -173,13 +185,31 @@ export class DevTool extends ThemedBase<DevToolProperties> {
 		setInterfaceProperty('selectedDNode', id);
 	}
 
+	private _onVDomToggle(id: string) {
+		const { interface: { expandedDNodes }, setInterfaceProperty } = this.properties;
+
+		if (includes(expandedDNodes, id)) {
+			expandedDNodes.splice(expandedDNodes.indexOf(id), 1);
+		} else {
+			expandedDNodes.push(id);
+		}
+		setInterfaceProperty('expandedDNodes', expandedDNodes);
+	}
+
 	/**
 	 * Render the left (leading) part of the user interface
 	 */
 	private _renderLeft() {
 		const {
 			diagnostics,
-			interface: { selectedDNode, selectedEventId: selected, selectedStateNode, view }
+			interface: {
+				expandedDNodes,
+				expandedStateNodes,
+				selectedDNode,
+				selectedEventId: selected,
+				selectedStateNode,
+				view
+			}
 		} = this.properties;
 		const { eventLog, lastRender: root, storeState: state } = diagnostics;
 
@@ -198,19 +228,23 @@ export class DevTool extends ThemedBase<DevToolProperties> {
 			case 'vdom':
 				title = 'Last Render';
 				viewDom = w(VDom, {
+					expanded: expandedDNodes,
 					key: 'vdom',
 					root,
 					selected: selectedDNode,
-					onSelect: this._onVDomSelect
+					onItemSelect: this._onVDomSelect,
+					onItemToggle: this._onVDomToggle
 				});
 				break;
 			case 'store':
 				title = 'Store State';
 				viewDom = w(StoreState, {
+					expanded: expandedStateNodes,
 					key: 'store',
 					selected: selectedStateNode,
 					state,
-					onSelect: this._onStateSelect
+					onItemSelect: this._onStateSelect,
+					onItemToggle: this._onStateToggle
 				});
 				break;
 		}

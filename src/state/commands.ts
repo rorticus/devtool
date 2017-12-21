@@ -17,6 +17,8 @@ export const initCommand = createCommand(({ path }) => {
 		add(path('interface'), {
 			activeIndex: 0,
 			apiVersion: undefined,
+			expandedDNodes: [],
+			expandedStateNodes: [],
 			view: undefined
 		})
 	];
