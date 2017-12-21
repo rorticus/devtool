@@ -79,6 +79,44 @@ export interface DevToolProperties extends ThemedProperties {
 	onCheckVersion?(): void;
 }
 
+/**
+ * A function which converts a state object and path to a set of properties for display purposes
+ * @param state The state object to inspect
+ * @param path The path to the value to convert
+ */
+function getKeyProperties(state: any, path: string): { [key: string]: string | number | boolean | undefined | null } {
+	const parts = path.split('/');
+	const actualValue = parts.reduce((previous, currentPath) => {
+		return currentPath ? previous[currentPath] : previous;
+	}, state);
+	let value: string | number | boolean | undefined | null;
+	let type: string;
+	if (actualValue === null) {
+		value = '@@null';
+		type = 'null';
+	} else if (typeof actualValue === 'undefined') {
+		value = '@@undefined';
+		type = 'undefined';
+	} else if (typeof actualValue === 'string' || typeof actualValue === 'number' || typeof actualValue === 'boolean') {
+		value = actualValue;
+		type = typeof actualValue;
+	} else if (typeof actualValue === 'symbol') {
+		value = String(actualValue);
+		type = 'symbol';
+	} else if (typeof actualValue === 'function') {
+		value = (actualValue as any).name || 'Anonymous';
+		type = 'function';
+	} else {
+		value = JSON.stringify(actualValue);
+		type = Array.isArray(actualValue) ? 'array' : 'object';
+	}
+	return {
+		path,
+		type,
+		value
+	};
+}
+
 @theme(devtoolCss)
 @theme(icons)
 export class DevTool extends ThemedBase<DevToolProperties> {
@@ -139,7 +177,10 @@ export class DevTool extends ThemedBase<DevToolProperties> {
 	 * Render the left (leading) part of the user interface
 	 */
 	private _renderLeft() {
-		const { diagnostics, interface: { selectedEventId: selected, view } } = this.properties;
+		const {
+			diagnostics,
+			interface: { selectedDNode, selectedEventId: selected, selectedStateNode, view }
+		} = this.properties;
 		const { eventLog, lastRender: root, storeState: state } = diagnostics;
 
 		let viewDom: DNode = null;
@@ -159,6 +200,7 @@ export class DevTool extends ThemedBase<DevToolProperties> {
 				viewDom = w(VDom, {
 					key: 'vdom',
 					root,
+					selected: selectedDNode,
 					onSelect: this._onVDomSelect
 				});
 				break;
@@ -166,6 +208,7 @@ export class DevTool extends ThemedBase<DevToolProperties> {
 				title = 'Store State';
 				viewDom = w(StoreState, {
 					key: 'store',
+					selected: selectedStateNode,
 					state,
 					onSelect: this._onStateSelect
 				});
@@ -206,8 +249,8 @@ export class DevTool extends ThemedBase<DevToolProperties> {
 	 */
 	private _renderRight() {
 		const {
-			diagnostics: { eventLog, lastRender },
-			interface: { activeIndex, selectedDNode, selectedEventId, view }
+			diagnostics: { eventLog, lastRender, storeState },
+			interface: { activeIndex, selectedDNode, selectedEventId, selectedStateNode, view }
 		} = this.properties;
 
 		const selected = lastRender && selectedDNode ? findDNode(lastRender, selectedDNode) : undefined;
@@ -217,9 +260,11 @@ export class DevTool extends ThemedBase<DevToolProperties> {
 				items = eventLog && selectedEventId !== undefined ? eventLog[selectedEventId].data : undefined;
 				break;
 			case 'vdom':
-				selected && typeof selected !== 'string' ? selected.properties : undefined;
+				items = selected && typeof selected !== 'string' ? selected.properties : undefined;
 				break;
 			case 'store':
+				items =
+					(storeState && selectedStateNode && getKeyProperties(storeState, selectedStateNode)) || undefined;
 				break;
 		}
 

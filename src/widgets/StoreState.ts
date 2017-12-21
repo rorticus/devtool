@@ -9,6 +9,7 @@ import TreePane, { TreePaneItem } from './TreePane';
 import * as storestateCss from './styles/storestate.m.css';
 
 export interface StoreStateProperties extends ThemedProperties {
+	selected?: string;
 	state?: object;
 	onSelect?(id: string): void;
 }
@@ -29,7 +30,6 @@ function createTreePaneItem(
 export class StoreState extends ThemedBase<StoreStateProperties> {
 	private _expanded: string[] = [];
 	private _root?: TreePaneItem;
-	private _selected: string;
 
 	private _getChild(
 		key: string,
@@ -138,7 +138,6 @@ export class StoreState extends ThemedBase<StoreStateProperties> {
 	}
 
 	private _onItemSelect(id: string) {
-		this._selected = id;
 		const { onSelect } = this.properties;
 		onSelect && onSelect(id);
 	}
@@ -163,7 +162,7 @@ export class StoreState extends ThemedBase<StoreStateProperties> {
 		if (state && !this._root) {
 			this._root = this._mapObject(state, '/');
 		}
-		const { _expanded: expanded, _root: root, _selected: selected } = this;
+		const { _expanded: expanded, _root: root, properties: { selected } } = this;
 		return root
 			? w(TreePane, {
 					expanded,

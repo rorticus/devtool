@@ -11,6 +11,7 @@ import * as vdomCss from './styles/vdom.m.css';
 
 export interface VDomProperties extends ThemedProperties {
 	root?: SerializedDNode;
+	selected?: string;
 
 	onSelect?(id: string): void;
 }
@@ -31,7 +32,6 @@ export const ThemedBase = ThemedMixin(WidgetBase);
 export class VDom extends ThemedBase<VDomProperties> {
 	private _expanded: string[] = [];
 	private _root: TreePaneItem | undefined;
-	private _selected: string;
 
 	private _mapNodes(node: SerializedDNode, path: string = '', index: number = 0): TreePaneItem {
 		const id = `${path}/${index}`;
@@ -83,7 +83,6 @@ export class VDom extends ThemedBase<VDomProperties> {
 	}
 
 	private _onItemSelect(id: string) {
-		this._selected = id;
 		const { onSelect } = this.properties;
 		onSelect && onSelect(id);
 	}
@@ -107,7 +106,7 @@ export class VDom extends ThemedBase<VDomProperties> {
 		if (this.properties.root && !this._root) {
 			this._root = this._mapNodes(this.properties.root);
 		}
-		const { _expanded: expanded, _root: root, _selected: selected } = this;
+		const { _expanded: expanded, _root: root, properties: { selected } } = this;
 		return root
 			? w(TreePane, {
 					expanded,
