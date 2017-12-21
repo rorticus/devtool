@@ -7,7 +7,7 @@ export interface Diagnostics {
 	projectors: string[];
 	lastRender: SerializedDNode;
 	stores: string[];
-	storeState: any;
+	storeState?: object;
 }
 
 export interface InterfaceState {
@@ -15,6 +15,7 @@ export interface InterfaceState {
 	apiVersion?: string;
 	selectedDNode?: string;
 	selectedEventId?: number;
+	selectedStateNode?: string;
 	view?: 'vdom' | 'logs' | 'store';
 }
 

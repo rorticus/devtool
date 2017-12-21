@@ -1,7 +1,6 @@
 import { SerializedDNode } from '@dojo/diagnostics/serializeDNode';
-import { v, w } from '@dojo/widget-core/d';
 import { includes } from '@dojo/shim/array';
-import Map from '@dojo/shim/Map';
+import { v, w } from '@dojo/widget-core/d';
 import { auto } from '@dojo/widget-core/diff';
 import { DNode } from '@dojo/widget-core/interfaces';
 import WidgetBase from '@dojo/widget-core/WidgetBase';
@@ -16,49 +15,34 @@ export interface VDomProperties extends ThemedProperties {
 	onSelect?(id: string): void;
 }
 
+function createTreePaneItem(
+	id: string,
+	label: DNode | DNode[],
+	title: string,
+	iconClass: string | undefined | null,
+	children?: TreePaneItem[]
+): TreePaneItem {
+	return { children, iconClass, id, label, title };
+}
+
 export const ThemedBase = ThemedMixin(WidgetBase);
 
 @theme(vdomCss)
 export class VDom extends ThemedBase<VDomProperties> {
 	private _expanded: string[] = [];
-	private _selected: string;
-	private _treeItemMap = new Map<string, TreePaneItem>();
 	private _root: TreePaneItem | undefined;
-
-	private _createTreePaneItem(
-		id: string,
-		label: DNode | DNode[],
-		title: string,
-		children?: TreePaneItem[]
-	): TreePaneItem {
-		const item = { children, id, label, title };
-		this._treeItemMap.set(id, item);
-		return item;
-	}
-
-	private _getItemIconClass = (item: TreePaneItem): string | undefined | null => {
-		if (item.title.indexOf('Widget') >= 0) {
-			return this.theme(vdomCss.wnode);
-		}
-		if (item.title.indexOf('Virtual DOM') >= 0) {
-			return this.theme(vdomCss.hnode);
-		}
-		if (item.label && typeof item.label === 'string' && item.label.indexOf('String(') >= 0) {
-			return this.theme(vdomCss.string);
-		}
-		return this.theme(vdomCss.empty);
-	};
+	private _selected: string;
 
 	private _mapNodes(node: SerializedDNode, path: string = '', index: number = 0): TreePaneItem {
 		const id = `${path}/${index}`;
 		if (node === null) {
-			return this._createTreePaneItem(id, 'Null', id);
+			return createTreePaneItem(id, 'Null', id, this.theme(vdomCss.empty));
 		}
 		if (typeof node === 'string') {
-			return this._createTreePaneItem(id, `String('${node}')`, id);
+			return createTreePaneItem(id, `String('${node}')`, id, this.theme(vdomCss.string));
 		}
 		if (!node) {
-			return this._createTreePaneItem(id, 'Undefined', id);
+			return createTreePaneItem(id, 'Undefined', id, this.theme(vdomCss.empty));
 		}
 		const key =
 			(node.properties && node.properties.key && typeof node.properties.key === 'string') ||
@@ -87,14 +71,15 @@ export class VDom extends ThemedBase<VDomProperties> {
 				node.children && node.children.length
 					? node.children.map((child, idx) => this._mapNodes(child, id, idx))
 					: undefined;
-			return this._createTreePaneItem(id, label, `Virtual DOM - ${id}`, children);
+			return createTreePaneItem(id, label, `Virtual DOM - ${id}`, this.theme(vdomCss.hnode), children);
 		}
 		const labelNode = v('span', {}, [node.widgetConstructor || 'Widget']);
 		const label = [labelNode, key];
 		const children = node.rendered.length
 			? node.rendered.map((child, idx) => this._mapNodes(child, id, idx))
 			: undefined;
-		return this._createTreePaneItem(id, label, `Widget - ${id}`, children);
+
+		return createTreePaneItem(id, label, `Widget - ${id}`, this.theme(vdomCss.wnode), children);
 	}
 
 	private _onItemSelect(id: string) {
@@ -115,18 +100,17 @@ export class VDom extends ThemedBase<VDomProperties> {
 
 	@diffProperty('root', auto)
 	protected onRootChange(): void {
-		this._treeItemMap.clear();
+		this._root = undefined;
 	}
 
 	protected render(): DNode {
-		if (this.properties.root && !this._treeItemMap.size) {
+		if (this.properties.root && !this._root) {
 			this._root = this._mapNodes(this.properties.root);
 		}
 		const { _expanded: expanded, _root: root, _selected: selected } = this;
 		return root
 			? w(TreePane, {
 					expanded,
-					getItemIconClass: this._getItemIconClass,
 					root,
 					selected,
 					showRoot: true,

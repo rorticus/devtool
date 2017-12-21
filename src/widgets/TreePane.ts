@@ -23,6 +23,16 @@ export interface TreePaneItem {
 	children?: TreePaneItem[];
 
 	/**
+	 * A CSS class name to use when the item is expanded
+	 */
+	expandedIconClass?: string | undefined | null;
+
+	/**
+	 * A CSS class name to use as the icon
+	 */
+	iconClass?: string | undefined | null;
+
+	/**
 	 * A unique id for the whole tree.
 	 */
 	id: string;
@@ -48,15 +58,6 @@ export interface TreePaneProperties extends ThemedProperties {
 	 * An array of item IDs that are currently exapanded.
 	 */
 	expanded?: string[];
-
-	/**
-	 * A method for returning the class to an item when rendering, the method should return a `string` with the class name that
-	 * should be used for the item or `undefined` if there is no icon
-	 * @param item The tree pane item that is referenced
-	 * @param expanded If the tree pane item has the `children` attribute, expanded will be `true` if the item is in an
-	 *                 expanded state or `false` if not expanded.  Otherwise the value is `undefined`.
-	 */
-	getItemIconClass?(item: TreePaneItem, expanded: boolean | undefined): string | undefined | null;
 
 	/**
 	 * The label for the widget from an accessability perspective
@@ -442,9 +443,9 @@ export default class TreePane extends ThemedBase<TreePaneProperties> {
 	 * @param level How deep in the hierarchy is the child
 	 */
 	private _renderChild(item: TreePaneItem, level: number): WNode<Row> {
-		const { children, id: key, label, title } = item;
+		const { children, expandedIconClass, iconClass, id: key, label, title } = item;
 		const navigation = this._navigation;
-		const { expanded: propsExpanded = [], getItemIconClass, selected, theme } = this.properties;
+		const { expanded: propsExpanded = [], selected, theme } = this.properties;
 		const expanded = includes(propsExpanded, key);
 		const hasChildren = Boolean(children);
 		if (!navigation.selected) {
@@ -461,7 +462,7 @@ export default class TreePane extends ThemedBase<TreePaneProperties> {
 		return w(Row, {
 			expanded,
 			hasChildren,
-			iconClass: getItemIconClass && getItemIconClass(item, expanded),
+			iconClass: expanded && expandedIconClass ? expandedIconClass : iconClass,
 			key,
 			level,
 			label,

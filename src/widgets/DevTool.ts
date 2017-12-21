@@ -116,9 +116,14 @@ export class DevTool extends ThemedBase<DevToolProperties> {
 		setInterfaceProperty('activeIndex', id);
 	}
 
+	private _onStateSelect(id: string) {
+		const { setInterfaceProperty } = this.properties;
+		setInterfaceProperty('selectedStateNode', id);
+	}
+
 	private async _onStoreClick() {
 		const { refreshDiagnostics, setInterfaceProperty } = this.properties;
-		refreshDiagnostics();
+		await refreshDiagnostics();
 		setInterfaceProperty('view', 'store');
 	}
 
@@ -135,12 +140,41 @@ export class DevTool extends ThemedBase<DevToolProperties> {
 	 */
 	private _renderLeft() {
 		const { diagnostics, interface: { selectedEventId: selected, view } } = this.properties;
-		const { eventLog, lastRender: root } = diagnostics;
+		const { eventLog, lastRender: root, storeState: state } = diagnostics;
+
+		let viewDom: DNode = null;
+		let title = 'Dojo 2 Development Tool';
+		switch (view) {
+			case 'logs':
+				title = 'Event Log';
+				viewDom = w(EventLog, {
+					key: 'eventLog',
+					eventLog,
+					selected,
+					onSelect: this._onEventSelect
+				});
+				break;
+			case 'vdom':
+				title = 'Last Render';
+				viewDom = w(VDom, {
+					key: 'vdom',
+					root,
+					onSelect: this._onVDomSelect
+				});
+				break;
+			case 'store':
+				title = 'Store State';
+				viewDom = w(StoreState, {
+					key: 'store',
+					state,
+					onSelect: this._onStateSelect
+				});
+				break;
+		}
+
 		const left = v('div', { classes: this.theme(devtoolCss.left) }, [
 			v('div', { classes: this.theme(devtoolCss.leftHeader) }, [
-				v('span', { classes: this.theme(devtoolCss.leftTitle) }, [
-					view && view === 'logs' ? 'Event Logs' : view ? 'Last Render' : 'Dojo 2 Development Tool'
-				]),
+				v('span', { classes: this.theme(devtoolCss.leftTitle) }, [title]),
 				w(ActionBar, { label: 'Actionbar Actions' }, [
 					w(ActionBarButton, {
 						iconClass: this.theme(icons.render),
@@ -161,33 +195,9 @@ export class DevTool extends ThemedBase<DevToolProperties> {
 						onClick: this._onStoreClick
 					})
 				])
-			])
+			]),
+			viewDom
 		]);
-		let viewDom: DNode = null;
-		switch (view) {
-			case 'logs':
-				viewDom = w(EventLog, {
-					key: 'eventLog',
-					eventLog,
-					selected,
-					onSelect: this._onEventSelect
-				});
-				break;
-			case 'vdom':
-				viewDom = w(VDom, {
-					key: 'vdom',
-					root,
-					onSelect: this._onVDomSelect
-				});
-				break;
-			case 'store':
-				console.log(diagnostics.storeState);
-				viewDom = w(StoreState, {
-					key: 'store'
-				});
-				break;
-		}
-		left.children!.push(viewDom);
 		return left;
 	}
 
@@ -199,11 +209,20 @@ export class DevTool extends ThemedBase<DevToolProperties> {
 			diagnostics: { eventLog, lastRender },
 			interface: { activeIndex, selectedDNode, selectedEventId, view }
 		} = this.properties;
+
 		const selected = lastRender && selectedDNode ? findDNode(lastRender, selectedDNode) : undefined;
-		const items =
-			view && view === 'logs'
-				? eventLog && selectedEventId !== undefined ? eventLog[selectedEventId].data : undefined
-				: selected && typeof selected !== 'string' ? selected.properties : undefined;
+		let items: { [key: string]: string | number | boolean | undefined | null } | undefined;
+		switch (view) {
+			case 'logs':
+				items = eventLog && selectedEventId !== undefined ? eventLog[selectedEventId].data : undefined;
+				break;
+			case 'vdom':
+				selected && typeof selected !== 'string' ? selected.properties : undefined;
+				break;
+			case 'store':
+				break;
+		}
+
 		return v('div', { classes: this.theme(devtoolCss.right) }, [
 			w(TabController, { activeIndex, onRequestTabChange: this._onRequestTabChange }, [
 				items
