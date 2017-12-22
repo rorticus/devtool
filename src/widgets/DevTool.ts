@@ -6,6 +6,7 @@ import { DNode } from '@dojo/widget-core/interfaces';
 import WidgetBase from '@dojo/widget-core/WidgetBase';
 import ThemedMixin, { theme, ThemedProperties } from '@dojo/widget-core/mixins/Themed';
 import Button from '@dojo/widgets/button/Button';
+import Select from '@dojo/widgets/select/Select';
 import Tab from '@dojo/widgets/tabcontroller/Tab';
 import TabController from '@dojo/widgets/tabcontroller/TabController';
 import { highlight } from '../diagnostics';
@@ -121,6 +122,14 @@ function getKeyProperties(state: any, path: string): { [key: string]: string | n
 @theme(devtoolCss)
 @theme(icons)
 export class DevTool extends ThemedBase<DevToolProperties> {
+	private _getOptionSelectedProjector(option: string) {
+		return option === this.properties.interface.selectedProjector;
+	}
+
+	private _getOptionSelectedStore(option: string): boolean {
+		return option === this.properties.interface.selectedStore;
+	}
+
 	private _listValueFormat(value: any, key: string) {
 		if ((key === 'innerRender' || key === 'outerRender') && typeof value === 'number') {
 			return value.toFixed(2);
@@ -143,6 +152,12 @@ export class DevTool extends ThemedBase<DevToolProperties> {
 		const { refreshDiagnostics, setInterfaceProperty } = this.properties;
 		await refreshDiagnostics();
 		setInterfaceProperty('view', 'logs');
+	}
+
+	private async _onProjectorChange(value: string) {
+		const { refreshDiagnostics, setInterfaceProperty } = this.properties;
+		await setInterfaceProperty('selectedProjector', value);
+		refreshDiagnostics();
 	}
 
 	private _onRefreshClick() {
@@ -177,6 +192,13 @@ export class DevTool extends ThemedBase<DevToolProperties> {
 		setInterfaceProperty('view', 'store');
 	}
 
+	private async _onStoreChange(value: string) {
+		console.log(value);
+		const { refreshDiagnostics, setInterfaceProperty } = this.properties;
+		await setInterfaceProperty('selectedStore', value);
+		refreshDiagnostics();
+	}
+
 	private _onVDomSelect(id: string) {
 		const { diagnostics: { projectors }, setInterfaceProperty } = this.properties;
 		if (projectors.length) {
@@ -207,13 +229,16 @@ export class DevTool extends ThemedBase<DevToolProperties> {
 				expandedStateNodes,
 				selectedDNode,
 				selectedEventId: selected,
+				selectedProjector,
 				selectedStateNode,
+				selectedStore,
 				view
 			}
 		} = this.properties;
-		const { eventLog, lastRender: root, storeState: state } = diagnostics;
+		const { eventLog, lastRender: root, projectors, stores, storeState: state } = diagnostics;
 
 		let viewDom: DNode = null;
+		let select: DNode = null;
 		let title = 'Dojo 2 Development Tool';
 		switch (view) {
 			case 'logs':
@@ -235,6 +260,17 @@ export class DevTool extends ThemedBase<DevToolProperties> {
 					onItemSelect: this._onVDomSelect,
 					onItemToggle: this._onVDomToggle
 				});
+				select = v('span', { classes: this.theme(devtoolCss.leftSelect), key: 'select' }, [
+					w(Select, {
+						getOptionSelected: this._getOptionSelectedProjector,
+						key: 'select',
+						options: projectors,
+						placeholder: 'Select projector',
+						value: selectedProjector,
+
+						onChange: this._onProjectorChange
+					})
+				]);
 				break;
 			case 'store':
 				title = 'Store State';
@@ -246,31 +282,48 @@ export class DevTool extends ThemedBase<DevToolProperties> {
 					onItemSelect: this._onStateSelect,
 					onItemToggle: this._onStateToggle
 				});
+				console.log('selectedStore', selectedStore);
+				select = v('span', { classes: this.theme(devtoolCss.leftSelect), key: 'select' }, [
+					w(Select, {
+						getOptionSelected: this._getOptionSelectedStore,
+						key: 'select',
+						options: stores,
+						placeholder: 'Select store',
+						value: selectedStore,
+
+						onChange: this._onStoreChange
+					})
+				]);
 				break;
 		}
 
 		const left = v('div', { classes: this.theme(devtoolCss.left) }, [
 			v('div', { classes: this.theme(devtoolCss.leftHeader) }, [
-				v('span', { classes: this.theme(devtoolCss.leftTitle) }, [title]),
+				v('span', { classes: this.theme(devtoolCss.leftTitle), key: 'title' }, [title]),
+				select,
 				w(ActionBar, { label: 'Actionbar Actions' }, [
-					w(ActionBarButton, {
-						iconClass: this.theme(icons.render),
-						key: 'lastRender',
-						label: 'Display Last Render',
-						onClick: this._onLastRenderClick
-					}),
 					w(ActionBarButton, {
 						iconClass: this.theme(icons.logs),
 						key: 'logs',
 						label: 'Display Event Logs',
 						onClick: this._onLogsClick
 					}),
-					w(ActionBarButton, {
-						iconClass: this.theme(icons.stores),
-						key: 'store',
-						label: 'Display Store State',
-						onClick: this._onStoreClick
-					})
+					projectors
+						? w(ActionBarButton, {
+								iconClass: this.theme(icons.render),
+								key: 'lastRender',
+								label: 'Display Last Render',
+								onClick: this._onLastRenderClick
+							})
+						: null,
+					stores
+						? w(ActionBarButton, {
+								iconClass: this.theme(icons.stores),
+								key: 'store',
+								label: 'Display Store State',
+								onClick: this._onStoreClick
+							})
+						: null
 				])
 			]),
 			viewDom

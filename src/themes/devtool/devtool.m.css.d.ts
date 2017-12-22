@@ -1,5 +1,6 @@
 export const content: string;
 export const right: string;
+export const leftSelect: string;
 export const root: string;
 export const noapi: string;
 export const banner: string;

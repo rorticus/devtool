@@ -10,6 +10,10 @@
 			border-top: var(--border-width) solid var(--color-border);
 			min-height: calc(var(--spacing-regular) * 40);
 		}
+
+		.leftSelect {
+			width: 100px;
+		}
 }
 
 @media screen
@@ -21,6 +25,10 @@
 		.right {
 			border-left: var(--border-width) solid var(--color-border);
 			min-width: calc(var(--spacing-regular) * 40);
+		}
+
+		.leftSelect {
+			width: 200px;
 		}
 }
 
@@ -55,6 +63,7 @@
 .leftHeader {
 	display: flex;
 	width: 100%;
+	margin-bottom: 2px;
 }
 
 .leftHeader > *:first-child {
@@ -65,6 +74,10 @@
 	color: var(--color-highlight);
 	font-size: 16px;
 	font-weight: 700;
+}
+
+.leftSelect {
+	padding-top: 2px;
 }
 
 .right {

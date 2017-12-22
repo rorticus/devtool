@@ -25,17 +25,17 @@ export const initCommand = createCommand(({ path }) => {
 });
 
 /**
- * Update the
+ * Update the diagnostic state
  */
-export const refreshDiagnosticsCommand = createCommand(async ({ path }) => {
-	const projectors = await getProjectors();
-	const stores = await getStores();
+export const refreshDiagnosticsCommand = createCommand(async ({ get, path }) => {
+	const selectedProjector = get(path('interface', 'selectedProjector'));
+	const selectedStore = get(path('interface', 'selectedStore'));
 	const diagnostics: DevToolState['diagnostics'] = {
 		eventLog: await getEventLog(),
-		projectors,
-		lastRender: projectors.length ? await getLastRender(projectors[0]) : undefined,
-		stores,
-		storeState: stores.length ? await getStoreState(stores[0]) : undefined
+		projectors: await getProjectors(),
+		lastRender: selectedProjector ? await getLastRender(selectedProjector) : undefined,
+		stores: await getStores(),
+		storeState: selectedStore ? await getStoreState(selectedStore) : undefined
 	};
 	return [replace(path('diagnostics'), diagnostics)];
 });

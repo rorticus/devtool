@@ -17,7 +17,9 @@ export interface InterfaceState {
 	expandedStateNodes: string[];
 	selectedDNode?: string;
 	selectedEventId?: number;
+	selectedProjector?: string;
 	selectedStateNode?: string;
+	selectedStore?: string;
 	view?: 'vdom' | 'logs' | 'store';
 }
 
