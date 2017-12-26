@@ -12,7 +12,7 @@ import TabController from '@dojo/widgets/tabcontroller/TabController';
 import { highlight } from '../diagnostics';
 import ActionBar, { ActionBarButton } from './ActionBar';
 import EventLog from './EventLog';
-import ItemList from './ItemList';
+import ItemList, { Items } from './ItemList';
 import StoreState from './StoreState';
 import VDom from './VDom';
 import { DevToolState } from '../state/interfaces';
@@ -76,6 +76,15 @@ export interface DevToolProperties extends ThemedProperties {
 	): Promise<ProcessResult<DevToolState> | ProcessError<DevToolState>>;
 
 	/**
+	 * Toggle a particular node of an ItemList
+	 */
+	toggleExpanded(
+		key: string,
+		id: string,
+		value: string
+	): Promise<ProcessResult<DevToolState> | ProcessError<DevToolState>>;
+
+	/**
 	 * Check the version of the diagnostic API of the inspected applications
 	 */
 	onCheckVersion?(): void;
@@ -86,12 +95,12 @@ export interface DevToolProperties extends ThemedProperties {
  * @param state The state object to inspect
  * @param path The path to the value to convert
  */
-function getKeyProperties(state: any, path: string): { [key: string]: string | number | boolean | undefined | null } {
+function getKeyProperties(state: any, path: string): { [key: string]: string | number | boolean } {
 	const parts = path.split('/');
 	const actualValue = parts.reduce((previous, currentPath) => {
 		return currentPath ? previous[currentPath] : previous;
 	}, state);
-	let value: string | number | boolean | undefined | null;
+	let value: string | number | boolean;
 	let type: string;
 	if (actualValue === null) {
 		value = '@@null';
@@ -119,15 +128,61 @@ function getKeyProperties(state: any, path: string): { [key: string]: string | n
 	};
 }
 
+function getPropertyValue(value: any): string | number | boolean {
+	if (value === null) {
+		return '@@null';
+	}
+	if (value === undefined) {
+		return '@@undefined';
+	}
+	if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
+		return value;
+	}
+	if (typeof value === 'symbol') {
+		return String(value);
+	}
+	if (typeof value === 'function') {
+		const fnName: string | undefined = (value as any).name;
+		return `@@function${fnName ? `(${fnName})` : ''}`;
+	}
+	return JSON.stringify(value);
+}
+
 @theme(devtoolCss)
 @theme(icons)
 export class DevTool extends ThemedBase<DevToolProperties> {
+	private _getItemChildren(value: any): Items | undefined {
+		if (typeof value === 'string' && value.length > 1 && (value[0] === '[' || value[0] === '{')) {
+			const parsedValue: any[] | Items = JSON.parse(value);
+			if (Array.isArray(parsedValue)) {
+				return parsedValue.reduce(
+					(items, currentValue, idx) => {
+						items[idx] = getPropertyValue(currentValue);
+						return items;
+					},
+					{} as Items
+				);
+			}
+			return Object.keys(parsedValue).reduce(
+				(items, key) => {
+					items[key] = getPropertyValue(parsedValue[key]);
+					return items;
+				},
+				{} as Items
+			);
+		}
+	}
+
 	private _getOptionSelectedProjector(option: string) {
 		return option === this.properties.interface.selectedProjector;
 	}
 
 	private _getOptionSelectedStore(option: string): boolean {
 		return option === this.properties.interface.selectedStore;
+	}
+
+	private _listHasChildren(value: any) {
+		return (typeof value === 'string' && value.length > 1 && (value[0] === '[' || value[0] === '{')) || false;
 	}
 
 	private _listValueFormat(value: any, key: string) {
@@ -193,7 +248,6 @@ export class DevTool extends ThemedBase<DevToolProperties> {
 	}
 
 	private async _onStoreChange(value: string) {
-		console.log(value);
 		const { refreshDiagnostics, setInterfaceProperty } = this.properties;
 		await setInterfaceProperty('selectedStore', value);
 		refreshDiagnostics();
@@ -282,7 +336,6 @@ export class DevTool extends ThemedBase<DevToolProperties> {
 					onItemSelect: this._onStateSelect,
 					onItemToggle: this._onStateToggle
 				});
-				console.log('selectedStore', selectedStore);
 				select = v('span', { classes: this.theme(devtoolCss.leftSelect), key: 'select' }, [
 					w(Select, {
 						getOptionSelected: this._getOptionSelectedStore,
@@ -337,23 +390,47 @@ export class DevTool extends ThemedBase<DevToolProperties> {
 	private _renderRight() {
 		const {
 			diagnostics: { eventLog, lastRender, storeState },
-			interface: { activeIndex, selectedDNode, selectedEventId, selectedStateNode, view }
+			interface: {
+				activeIndex,
+				expandedProperties,
+				selectedDNode,
+				selectedEventId,
+				selectedProjector,
+				selectedStateNode,
+				selectedStore,
+				view
+			},
+			toggleExpanded
 		} = this.properties;
 
 		const selected = lastRender && selectedDNode ? findDNode(lastRender, selectedDNode) : undefined;
+		let expandedKey: string | undefined;
+		let expandedId: string | undefined;
 		let items: { [key: string]: string | number | boolean | undefined | null } | undefined;
 		switch (view) {
 			case 'logs':
+				expandedKey = '__logs';
+				expandedId = selectedEventId !== undefined ? String(selectedEventId) : undefined;
 				items = eventLog && selectedEventId !== undefined ? eventLog[selectedEventId].data : undefined;
 				break;
 			case 'vdom':
+				expandedKey = selectedProjector;
+				expandedId = selectedDNode;
 				items = selected && typeof selected !== 'string' ? selected.properties : undefined;
 				break;
 			case 'store':
+				expandedKey = selectedStore;
+				expandedId = selectedStateNode;
 				items =
 					(storeState && selectedStateNode && getKeyProperties(storeState, selectedStateNode)) || undefined;
 				break;
 		}
+		const expanded =
+			(expandedKey &&
+				expandedId &&
+				expandedProperties[expandedKey] &&
+				expandedProperties[expandedKey][expandedId]) ||
+			undefined;
 
 		return v('div', { classes: this.theme(devtoolCss.right) }, [
 			w(TabController, { activeIndex, onRequestTabChange: this._onRequestTabChange }, [
@@ -368,8 +445,17 @@ export class DevTool extends ThemedBase<DevToolProperties> {
 							},
 							[
 								w(ItemList, {
+									expanded,
+									getItemChildren: this._getItemChildren,
 									items,
-									valueFormatter: this._listValueFormat
+									hasChildren: this._listHasChildren,
+									valueFormatter: this._listValueFormat,
+
+									onToggle(value: string) {
+										if (expandedKey && expandedId) {
+											toggleExpanded(expandedKey, expandedId, value);
+										}
+									}
 								})
 							]
 						)

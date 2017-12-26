@@ -18,6 +18,7 @@ export const initCommand = createCommand(({ path }) => {
 			activeIndex: 0,
 			apiVersion: undefined,
 			expandedDNodes: [],
+			expandedProperties: {},
 			expandedStateNodes: [],
 			view: undefined
 		})
@@ -45,4 +46,26 @@ export const refreshDiagnosticsCommand = createCommand(async ({ get, path }) => 
  */
 export const setInterfacePropertyCommand = createCommand(({ payload: [key, value], path }) => {
 	return [replace(path('interface', key), value)];
+});
+
+/**
+ * Toggle a value in an expanded property array
+ */
+export const toggleExpandedCommand = createCommand(({ get, path, payload: [key, id, value] }) => {
+	const keyPath = path('interface', 'expandedProperties', key);
+	if (!get(keyPath)) {
+		return [add(keyPath, { [id]: [value] })];
+	}
+	const idPath = path('interface', 'expandedProperties', key, id);
+	const expanded = get(idPath);
+	if (!expanded) {
+		return [add(idPath, [value])];
+	}
+	const indexOfValue = expanded.indexOf(value);
+	if (indexOfValue >= 0) {
+		const newExpanded = [...expanded];
+		newExpanded.splice(indexOfValue, 1);
+		return [replace(idPath, newExpanded)];
+	}
+	return [replace(idPath, [...expanded, value as string])];
 });

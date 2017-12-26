@@ -6,11 +6,27 @@
 	display: inherit;
 }
 
+.sublist {
+	display: inherit;
+}
+
 .empty {
 	display: inherit;
 }
 
 .item {
+	display: inherit;
+}
+
+.alternate {
+	display: inherit;
+}
+
+.expandable {
+	display: inherit;
+}
+
+.expanded {
 	display: inherit;
 }
 

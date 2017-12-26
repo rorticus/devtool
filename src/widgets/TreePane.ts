@@ -199,38 +199,18 @@ export class Row extends ThemedBase<RowProperties> {
 				classes: this.theme(classes),
 				role: 'treeitem',
 				styles: {
-					'padding-left': String(level * ROW_LEVEL_LEFT_PADDING) + 'px'
+					'padding-left': `${level * ROW_LEVEL_LEFT_PADDING}px`
 				},
 
 				onclick: _onclick,
 				ondblclick: _ondblclick
 			},
 			[
-				v(
-					'div',
-					{
-						classes: this.theme(css.content),
-						key: 'content'
-					},
-					[
-						v(
-							'div',
-							{
-								classes: [this.theme(css.label), iconCss.label, iconClass || null],
-								title: title
-							},
-							[
-								v(
-									'a',
-									{
-										classes: this.theme(css.labelName)
-									},
-									Array.isArray(label) ? label : [label]
-								)
-							]
-						)
-					]
-				)
+				v('div', { classes: this.theme(css.content), key: 'content' }, [
+					v('div', { classes: [this.theme(css.label), iconCss.label, iconClass || null], title: title }, [
+						v('a', { classes: this.theme(css.labelName) }, Array.isArray(label) ? label : [label])
+					])
+				])
 			]
 		);
 	}
@@ -397,6 +377,7 @@ export default class TreePane extends ThemedBase<TreePaneProperties> {
 	 * Handler for the row's higher order `onClick` event.  This fires the `onItemSelect` event.  If the item has children
 	 * then the `onItemToggle` is fired.  It also indicates to the widget that it should attempt to focus itself.
 	 * @param key The key of the item that has been clicked
+	 * @param isContent Set to true by the row if it is the content, versus just the arrow, that is being clicked on
 	 */
 	private _onRowClick(key: string, isContent: boolean) {
 		const { toggleOnArrowClick, onItemSelect, onItemToggle } = this.properties;

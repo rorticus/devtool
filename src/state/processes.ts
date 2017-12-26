@@ -1,5 +1,5 @@
 import { createProcess } from '@dojo/stores/process';
-import { initCommand, refreshDiagnosticsCommand, setInterfacePropertyCommand } from './commands';
+import { initCommand, refreshDiagnosticsCommand, setInterfacePropertyCommand, toggleExpandedCommand } from './commands';
 
 /**
  * Initialise the state of the store
@@ -15,3 +15,5 @@ export const refreshDiagnosticsProcess = createProcess([refreshDiagnosticsComman
  * Set a property of the interface state in the state store
  */
 export const setInterfacePropertyProcess = createProcess([setInterfacePropertyCommand]);
+
+export const toggleExpandedProcess = createProcess([toggleExpandedCommand]);

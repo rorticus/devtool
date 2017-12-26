@@ -14,6 +14,9 @@ export interface InterfaceState {
 	activeIndex: number;
 	apiVersion?: string;
 	expandedDNodes: string[];
+	expandedProperties: {
+		[key: string]: { [id: string]: string[] };
+	};
 	expandedStateNodes: string[];
 	selectedDNode?: string;
 	selectedEventId?: number;
