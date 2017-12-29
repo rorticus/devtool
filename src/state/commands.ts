@@ -1,7 +1,14 @@
 import { createCommandFactory } from '@dojo/stores/process';
 import { add, replace } from '@dojo/stores/state/operations';
 import { DevToolState } from './interfaces';
-import { getEventLog, getLastRender, getProjectors, getStores, getStoreState } from '../diagnostics';
+import {
+	getEventLog,
+	getLastRender,
+	getProjectors,
+	getStores,
+	getStoreState,
+	getStoreTransactions
+} from '../diagnostics';
 
 export const createCommand = createCommandFactory<DevToolState>();
 
@@ -36,7 +43,8 @@ export const refreshDiagnosticsCommand = createCommand(async ({ get, path }) => 
 		projectors: await getProjectors(),
 		lastRender: selectedProjector ? await getLastRender(selectedProjector) : undefined,
 		stores: await getStores(),
-		storeState: selectedStore ? await getStoreState(selectedStore) : undefined
+		storeState: selectedStore ? await getStoreState(selectedStore) : undefined,
+		storeTransactions: selectedStore ? await getStoreTransactions(selectedStore) : undefined
 	};
 	return [replace(path('diagnostics'), diagnostics)];
 });

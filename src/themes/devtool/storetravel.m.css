@@ -1,0 +1,22 @@
+@import './variables.css';
+
+.root {
+	display: flex;
+	flex: 1;
+	flex-direction: column;
+	padding: 0 4px;
+}
+
+.ops {
+	flex: 1;
+}
+
+.timeline {
+	display: flex;
+}
+
+.slider {
+	flex: 1;
+	padding-right: var(--spacing-regular);
+	padding-top: 4px;
+}

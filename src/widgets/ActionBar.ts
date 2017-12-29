@@ -19,7 +19,7 @@ export interface ActionBarButtonProperties extends ThemedProperties {
 	/**
 	 * The class name to place on the icon node
 	 */
-	iconClass?: SupportedClassName;
+	iconClass?: SupportedClassName | SupportedClassName[];
 
 	/**
 	 * The label used fr a11y and when hinting on the button
@@ -44,6 +44,7 @@ export class ActionBarButton extends ThemedBase<ActionBarButtonProperties, null>
 
 	render() {
 		const { iconClass, label: title } = this.properties;
+		let iconClasses: SupportedClassName[] = (iconClass && Array.isArray(iconClass) && iconClass) || [iconClass];
 		return v(
 			'li',
 			{
@@ -53,7 +54,7 @@ export class ActionBarButton extends ThemedBase<ActionBarButtonProperties, null>
 			},
 			[
 				v('a', {
-					classes: [this.theme(actionbarbuttonCss.label), actionbarbuttonCss.labelFixed, iconClass || null],
+					classes: [this.theme(actionbarbuttonCss.label), actionbarbuttonCss.labelFixed, ...iconClasses],
 					role: 'button',
 					tabIndex: 0,
 					title

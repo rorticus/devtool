@@ -1,5 +1,4 @@
 import { SerializedDNode } from '@dojo/diagnostics/serializeDNode';
-import { includes } from '@dojo/shim/array';
 import { ProcessError, ProcessResult } from '@dojo/stores/process';
 import { v, w } from '@dojo/widget-core/d';
 import { DNode } from '@dojo/widget-core/interfaces';
@@ -9,11 +8,12 @@ import Button from '@dojo/widgets/button/Button';
 import Select from '@dojo/widgets/select/Select';
 import Tab from '@dojo/widgets/tabcontroller/Tab';
 import TabController from '@dojo/widgets/tabcontroller/TabController';
-import { highlight } from '../diagnostics';
+import { highlight, storeTravel } from '../diagnostics';
 import ActionBar, { ActionBarButton } from './ActionBar';
 import EventLog from './EventLog';
 import ItemList, { Items } from './ItemList';
 import StoreState from './StoreState';
+import StoreTravel from './StoreTravel';
 import VDom from './VDom';
 import { DevToolState } from '../state/interfaces';
 
@@ -233,7 +233,7 @@ export class DevTool extends ThemedBase<DevToolProperties> {
 	private _onStateToggle(id: string) {
 		const { interface: { expandedStateNodes }, setInterfaceProperty } = this.properties;
 
-		if (includes(expandedStateNodes, id)) {
+		if (expandedStateNodes.includes(id)) {
 			expandedStateNodes.splice(expandedStateNodes.indexOf(id), 1);
 		} else {
 			expandedStateNodes.push(id);
@@ -253,6 +253,18 @@ export class DevTool extends ThemedBase<DevToolProperties> {
 		refreshDiagnostics();
 	}
 
+	private async _onTravel(distance: number) {
+		const { interface: { selectedStore }, refreshDiagnostics } = this.properties;
+		selectedStore && (await storeTravel(selectedStore, distance));
+		refreshDiagnostics();
+	}
+
+	private async _onTravelClick() {
+		const { refreshDiagnostics, setInterfaceProperty } = this.properties;
+		await refreshDiagnostics();
+		setInterfaceProperty('view', 'travel');
+	}
+
 	private _onVDomSelect(id: string) {
 		const { diagnostics: { projectors }, setInterfaceProperty } = this.properties;
 		if (projectors.length) {
@@ -264,7 +276,7 @@ export class DevTool extends ThemedBase<DevToolProperties> {
 	private _onVDomToggle(id: string) {
 		const { interface: { expandedDNodes }, setInterfaceProperty } = this.properties;
 
-		if (includes(expandedDNodes, id)) {
+		if (expandedDNodes.includes(id)) {
 			expandedDNodes.splice(expandedDNodes.indexOf(id), 1);
 		} else {
 			expandedDNodes.push(id);
@@ -289,7 +301,14 @@ export class DevTool extends ThemedBase<DevToolProperties> {
 				view
 			}
 		} = this.properties;
-		const { eventLog, lastRender: root, projectors, stores, storeState: state } = diagnostics;
+		const {
+			eventLog,
+			lastRender: root,
+			projectors,
+			stores,
+			storeState: state,
+			storeTransactions = { history: 0, redo: 0 }
+		} = diagnostics;
 
 		let viewDom: DNode = null;
 		let select: DNode = null;
@@ -348,6 +367,28 @@ export class DevTool extends ThemedBase<DevToolProperties> {
 					})
 				]);
 				break;
+			case 'travel':
+				title = 'Store State Time Travel';
+				viewDom = selectedStore
+					? w(StoreTravel, {
+							historyLength: storeTransactions.history,
+							key: 'travel',
+							redoLength: storeTransactions.redo,
+
+							onTravel: this._onTravel
+						})
+					: null;
+				select = v('span', { classes: this.theme(devtoolCss.leftSelect), key: 'select' }, [
+					w(Select, {
+						getOptionSelected: this._getOptionSelectedStore,
+						key: 'select',
+						options: stores,
+						placeholder: 'Select store',
+						value: selectedStore,
+
+						onChange: this._onStoreChange
+					})
+				]);
 		}
 
 		const left = v('div', { classes: this.theme(devtoolCss.left) }, [
@@ -375,6 +416,14 @@ export class DevTool extends ThemedBase<DevToolProperties> {
 								key: 'store',
 								label: 'Display Store State',
 								onClick: this._onStoreClick
+							})
+						: null,
+					stores
+						? w(ActionBarButton, {
+								iconClass: this.theme(icons.travel),
+								key: 'travel',
+								label: 'Time travel a store state',
+								onClick: this._onTravelClick
 							})
 						: null
 				])

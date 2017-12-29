@@ -1,4 +1,3 @@
-import { includes } from '@dojo/shim/array';
 import { v, w } from '@dojo/widget-core/d';
 import { DNode, WNode } from '@dojo/widget-core/interfaces';
 import WidgetBase from '@dojo/widget-core/WidgetBase';
@@ -308,7 +307,7 @@ export default class TreePane extends ThemedBase<TreePaneProperties> {
 				}
 				break;
 			case Keys.Left /* Close a folder */:
-				if (selected && includes(expanded, selected) && onItemToggle) {
+				if (selected && expanded.includes(selected) && onItemToggle) {
 					evt.preventDefault();
 					onItemToggle(selected);
 				}
@@ -316,7 +315,7 @@ export default class TreePane extends ThemedBase<TreePaneProperties> {
 			case Keys.Right /* Open a folder */:
 				if (selected) {
 					const item = this._findItem(selected);
-					if (item && item.children && !includes(expanded, selected) && onItemToggle) {
+					if (item && item.children && !expanded.includes(selected) && onItemToggle) {
 						evt.preventDefault();
 						onItemToggle(selected);
 					}
@@ -427,7 +426,7 @@ export default class TreePane extends ThemedBase<TreePaneProperties> {
 		const { children, expandedIconClass, iconClass, id: key, label, title } = item;
 		const navigation = this._navigation;
 		const { expanded: propsExpanded = [], selected, theme } = this.properties;
-		const expanded = includes(propsExpanded, key);
+		const expanded = propsExpanded.includes(key);
 		const hasChildren = Boolean(children);
 		if (!navigation.selected) {
 			if (selected === key) {
@@ -479,7 +478,7 @@ export default class TreePane extends ThemedBase<TreePaneProperties> {
 			items.forEach((item) => {
 				rowCount++;
 				children.push(rowCount >= start && rowCount <= end ? this._renderChild(item, level) : null);
-				if (item.children && item.children.length && includes(expanded, item.id)) {
+				if (item.children && item.children.length && expanded.includes(item.id)) {
 					addChildren(item.children, level + 1);
 				}
 			});

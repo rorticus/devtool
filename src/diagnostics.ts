@@ -14,6 +14,12 @@ if (!b || !b.devtools) {
  */
 const DIAGNOSTIC_ROOT = '__dojo2_diagnostics__';
 
+export interface SerializedPatchOperation {
+	op: 'add' | 'remove' | 'replace' | 'test';
+	path: { _segments: string[] };
+	value: any;
+}
+
 interface DiagnosticOptions {
 	args?: string[];
 	call?: boolean;
@@ -51,6 +57,10 @@ export function getStores(): Promise<string[]> {
 	return inspectedWindowDiagnostics('getStores');
 }
 
+export function getStoreTransactions(store: string): Promise<{ history: number; redo: number }> {
+	return inspectedWindowDiagnostics('getStoreTransactionLengths', { args: [`'${store}'`] });
+}
+
 export function getStoreState(store: string): Promise<any> {
 	return inspectedWindowDiagnostics('getStoreState', { args: [`'${store}'`] });
 }
@@ -61,6 +71,12 @@ export function version(): Promise<DiagnosticAPI['version']> {
 
 export function highlight(projector: string, path: string): Promise<void> {
 	return inspectedWindowDiagnostics('highlight', { args: [`'${projector}'`, `'${path}'`] });
+}
+
+export function storeTravel(store: string, distance: number, invalidate = true): Promise<SerializedPatchOperation[]> {
+	return inspectedWindowDiagnostics('storeTravel', {
+		args: [`'${store}'`, `${distance}`, invalidate ? 'true' : 'false']
+	});
 }
 
 export function unhighlight(): Promise<void> {

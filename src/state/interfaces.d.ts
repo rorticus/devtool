@@ -8,6 +8,7 @@ export interface Diagnostics {
 	lastRender: SerializedDNode;
 	stores: string[];
 	storeState?: object;
+	storeTransactions?: { history: number; redo: number };
 }
 
 export interface InterfaceState {
@@ -23,7 +24,7 @@ export interface InterfaceState {
 	selectedProjector?: string;
 	selectedStateNode?: string;
 	selectedStore?: string;
-	view?: 'vdom' | 'logs' | 'store';
+	view?: 'vdom' | 'logs' | 'store' | 'travel';
 }
 
 export interface DevToolState {
