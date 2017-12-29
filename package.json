@@ -1,6 +1,6 @@
 {
   "name": "@dojo/devtool",
-  "version": "0.0.1",
+  "version": "0.0.3",
   "description": "A development tool extension for Dojo 2",
   "main": "index.js",
   "scripts": {
@@ -8,7 +8,7 @@
     "clean:pack": "shx rm -rf *.tgz *.zip",
     "clean:output": "shx rm -rf output",
     "dist": "npm-run-all dist:build dist:pack dist:convert",
-    "dist:build": "dojo build",
+    "dist:build": "dojo build && shx rm output/dist/manifest.json",
     "dist:convert": "tar-to-zip *.tgz",
     "dist:pack": "npm pack",
     "precommit": "lint-staged",
