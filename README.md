@@ -1,26 +1,23 @@
 # @dojo/devtool
 
 <!-- temporary CI - REMOVE -->
-[![Build Status](https://travis-ci.org/kitsonk/devtool.svg?branch=master)](https://travis-ci.org/kitsonk/devtool)
-
-<!-- TODO: change and uncomment
-[![Build Status](https://travis-ci.org/dojo/<< package-name >>.svg?branch=master)](https://travis-ci.org/dojo/<< package-name >>)
-[![codecov](https://codecov.io/gh/dojo/<< package-name >>/branch/master/graph/badge.svg)](https://codecov.io/gh/dojo/<< package-name >>)
-[![npm version](https://badge.fury.io/js/dojo-<< package-name >>.svg)](http://badge.fury.io/js/dojo-<< package-name >>)
--->
+[![Build Status](https://travis-ci.org/dojo/devtool.svg?branch=master)](https://travis-ci.org/dojo/devtool)
+[![Chrome Web Store version](https://img.shields.io/chrome-web-store/v/apaanemmnjkhiaanoaompdchbgplmflo.svg)](https://chrome.google.com/webstore/detail/dojo-2-devtools/apaanemmnjkhiaanoaompdchbgplmflo)
 
 A development tool extension for Dojo 2.
 
 ## Loading
 
-Currently, to use the development tool, you need to create a build and manually load the extension in either Chrome or Firefox.
+The tool is available for Chrome in the [Web Store](https://chrome.google.com/webstore/detail/dojo-2-devtools/apaanemmnjkhiaanoaompdchbgplmflo).
+
+You can also create a build and manually load the extension in either Chrome or Firefox.
 
 First clone the repository and perform and `npm install`.  You also will need `@dojo/cli` installed and available.
 
-From the root of the project, do a build:
+From the root of the project, build a distribution:
 
 ```
-$ dojo build
+$ npm run dist:build
 ```
 
 You should now be able to load the extension.
