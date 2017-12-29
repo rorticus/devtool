@@ -5,21 +5,13 @@
 		"importHelpers": true,
 		"jsx": "react",
 		"jsxFactory": "tsx",
-		"lib": [
-			"dom",
-			"es5",
-			"es2015.promise",
-			"es2015.iterable",
-			"es2015.symbol",
-			"es2015.symbol.wellknown"
-		],
 		"module": "umd",
 		"moduleResolution": "node",
 		"noUnusedLocals": true,
 		"outDir": "_build/",
 		"sourceMap": true,
 		"strict": true,
-		"target": "es5",
+		"target": "es2016",
 		"types": [
 			"chrome",
 			"intern"
