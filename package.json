@@ -1,89 +1,35 @@
 {
-  "name": "@dojo/devtool",
-  "version": "0.0.3",
-  "description": "A development tool extension for Dojo 2",
-  "main": "index.js",
+  "name": "chrome-test",
+  "version": "1.0.0",
   "scripts": {
-    "clean": "npm-run-all clean:*",
-    "clean:pack": "shx rm -rf *.tgz *.zip",
-    "clean:output": "shx rm -rf output",
-    "dist": "npm-run-all dist:build dist:pack dist:convert",
-    "dist:build": "dojo build && shx rm output/dist/manifest.json",
-    "dist:convert": "tar-to-zip *.tgz",
-    "dist:pack": "npm pack",
-    "precommit": "lint-staged",
-    "prettier": "prettier --write 'src/**/*.ts' 'tests/**/*.ts'",
-    "test": "intern"
+    "build:clean": "rm -rf _build && rm -rf output",
+    "build:app": "dojo build",
+    "build:ts": "tsc -p .",
+    "build:chrome": "copyfiles -u 4 -e \"*.ts\" _build/src/clients/chrome/* output/dist && copyfiles -e \"*.ts\" -u 3 src/clients/chrome/* output/dist",
+    "build": "npm run build:clean && npm run build:app && npm run build:ts && npm run build:chrome"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/dojo/devtool.git"
+  "dependencies": {
+    "@dojo/core": "~0.3.1",
+    "@dojo/has": "~0.1.2",
+    "@dojo/i18n": "~0.4.1",
+    "@dojo/routing": "~0.4.1",
+    "@dojo/shim": "~0.2.4",
+    "@dojo/widgets": "^0.5.1",
+    "tslib": "~1.8.1"
   },
-  "keywords": [
-    "Dev",
-    "Tool",
-    "Chrome",
-    "Extensions",
-    "Dojo2"
-  ],
-  "author": "Kitson P. Kelly <kitsonk@dojotoolkit.org>",
-  "license": "BSD-3-Clause",
-  "bugs": {
-    "url": "https://github.com/dojo/devtool/issues"
-  },
-  "homepage": "https://github.com/dojo/devtool#readme",
-  "files": [
-    "output/dist",
-    "img",
-    "devtools.html",
-    "devtools.js",
-    "LICENSE",
-    "manifest.json",
-    "README.md"
-  ],
   "devDependencies": {
-    "@dojo/cli-build-app": "file:deps/dojo-cli-build-app-0.1.0-rc.1.tgz",
-    "@dojo/cli-test-intern": "^0.2.1",
-    "@dojo/core": "~0.2.1",
-    "@dojo/diagnostics": "file:deps/dojo-diagnostics-0.1.0-rc.1.tgz",
-    "@dojo/has": "~0.1.1",
-    "@dojo/i18n": "~0.2.0",
-    "@dojo/interfaces": "~0.1.0",
-    "@dojo/routing": "^0.2.0",
-    "@dojo/shim": "~0.2.3",
-    "@dojo/stores": "^0.2.0",
-    "@dojo/test-extras": "~0.2.1",
-    "@dojo/widget-core": "~0.3.0",
-    "@dojo/widgets": "^0.2.2",
-    "@types/chrome": "0.0.55",
-    "@types/moment-duration-format": "^1.3.8",
-    "codecov": "^3.0.0",
-    "husky": "0.14.3",
-    "intern": "^4.1.4",
-    "lint-staged": "6.0.0",
-    "moment": "^2.19.3",
-    "moment-duration-format": "^1.3.0",
-    "npm-run-all": "4.1.2",
-    "prettier": "1.9.2",
-    "shx": "0.2.2",
-    "tar-to-zip": "1.3.4",
-    "tslib": "~1.8.1",
-    "tslint": "^5.8.0",
-    "tslint-plugin-prettier": "1.3.0",
-    "typescript": "~2.5.3"
-  },
-  "lint-staged": {
-    "*.{ts,tsx}": [
-      "prettier --write",
-      "git add"
-    ]
-  },
-  "prettier": {
-    "singleQuote": true,
-    "tabWidth": 4,
-    "useTabs": true,
-    "parser": "typescript",
-    "printWidth": 120,
-    "arrowParens": "always"
+    "@dojo/cli-build-app": "~0.1.1",
+    "@dojo/cli-test-intern": "~0.4.0",
+    "@dojo/loader": "~0.1.1",
+    "@dojo/test-extras": "~0.4.1",
+    "@dojo/widget-core": "^0.9.5",
+    "@types/glob": "~5.0.0",
+    "@types/grunt": "~0.4.0",
+    "@types/node": "^6.0.46",
+    "@types/sinon": "^1.16.35",
+    "copyfiles": "^2.0.0",
+    "intern": "~4.1.5",
+    "sinon": "^2.0.0",
+    "typescript": "~2.6.1"
   }
 }

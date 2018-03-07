@@ -1,0 +1,15 @@
+{
+  "name": "Dojo2 Developer Tools",
+  "description": "Debugging and Profiling tools for Dojo2 Applications",
+  "version": "1.0",
+  "manifest_version": 2,
+  "devtools_page": "devtools.html",
+  "background": {
+    "persistent": false,
+    "scripts": ["background.js"]
+  },
+  "permissions": [
+    "tabs",
+    "<all_urls>"
+  ]
+}

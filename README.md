@@ -1,46 +1,31 @@
-# @dojo/devtool
+# chrome-test
 
-<!-- temporary CI - REMOVE -->
-[![Build Status](https://travis-ci.org/dojo/devtool.svg?branch=master)](https://travis-ci.org/dojo/devtool)
-[![Chrome Web Store version](https://img.shields.io/chrome-web-store/v/apaanemmnjkhiaanoaompdchbgplmflo.svg)](https://chrome.google.com/webstore/detail/dojo-2-devtools/apaanemmnjkhiaanoaompdchbgplmflo)
+This project was generated with the [Dojo CLI](https://github.com/dojo/cli) & [Dojo CLI create app command](https://github.com/dojo/cli-create-app).
 
-A development tool extension for Dojo 2.
+## Build
 
-## Loading
+Run `dojo build --mode dist` (the `mode` option defaults to `dist`) to create a production build for the project. The built artifacts will be stored in the `output/dist` directory.
 
-The tool is available for Chrome in the [Web Store](https://chrome.google.com/webstore/detail/dojo-2-devtools/apaanemmnjkhiaanoaompdchbgplmflo).
+## Development Build
 
-You can also create a build and manually load the extension in either Chrome or Firefox.
+Run `dojo build --mode dev` to create a development build for the project. The built artifacts will be stored in the `output/dev` directory.
 
-First clone the repository and perform and `npm install`.  You also will need `@dojo/cli` installed and available.
+## Development server
 
-From the root of the project, build a distribution:
+Run `dojo build --mode dev --watch memory --serve` to create an in memory development build and start a development server with hot reload. By default the server runs on port `9999`, navigate to `http://localhost:9999/`.
 
-```
-$ npm run dist:build
-```
+To change the port of the development use the `--port` option.
 
-You should now be able to load the extension.
+## Running unit tests
 
-### Chrome
+To run the unit tests, first the run a test build with `dojo build --mode test`. The build test artifacts are written to the `output/test` directory.
 
-In Chrome, navigate to `chrome://extensions` and enable _Developer mode_.
+Then `dojo test` to run the projects unit tests. These tests are located in the `tests/unit` directory. The `--watch` options can be used with the test build which means that `dojo test` can be re-run without needing to re-build the full application each time.
 
-Select to _Load unpacked extension..._ and navigate to the `devtool` folder, and _Select_ this folder.
+## Running functional tests
 
-You should see the extension now available.  You will likely see some warnings about security information contained in `node_modules`.  This can be removed by doing a `npm prune --production`, but will not be present in the released version.
+To run the functional tests, first the run a test build with `dojo build --mode test` and then `dojo test -f` to run the projects functional tests. These tests are located in the `tests/functional` directory.
 
-### Firefox
+## Further help
 
-In Firefox, navigate to `about:debugging#addons` and _Enable add-on debugging_.
-
-Choose to _Load Temporary Add-on_ and navigate to the `devtool/manifest.json`.  This will temporarily add the tool until you quit
-the browser.
-
-## Usage
-
-Once you have the extension loaded, when you have the development tools open, you should see a _Dojo 2_ panel.  When you navigate to that panel, you will have the interface to the development tools for Dojo 2.
-
-## Licensing information
-
-© [JS Foundation](https://js.foundation/) & contributors. [New BSD](http://opensource.org/licenses/BSD-3-Clause) and [Apache 2.0](https://opensource.org/licenses/Apache-2.0) licenses.
+To get help for these commands and more, run `dojo` on the command line.

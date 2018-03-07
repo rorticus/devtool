@@ -1,33 +1,19 @@
-import Store from '@dojo/diagnostics/wrappers/Store';
-import Projector from '@dojo/widget-core/mixins/Projector';
-import Registry from '@dojo/widget-core/Registry';
-import { registerThemeInjector } from '@dojo/widget-core/mixins/Themed';
-import { version } from './diagnostics';
-import { initProcess, setInterfacePropertyProcess } from './state/processes';
-import StateInjector from './state/StateInjector';
-import theme from './themes/devtool';
-import DevToolContainer from './containers/DevToolContainer';
+import { ChromeExtensionInputChannel } from '@dojo/diagnostics/channels/input/ChromeExtensionInputChannel';
+import { ProjectorMixin } from '@dojo/widget-core/mixins/Projector';
+import Panel from './widgets/Panel';
 
-const registry = new Registry();
+// listen for events from the chrome background page
+const listener = new ChromeExtensionInputChannel();
 
-const store = new Store();
-initProcess(store)();
+// Create a projector to convert the virtual DOM produced by the application into the rendered page.
+// For more information on starting up a Dojo 2 application, take a look at
+// https://dojo.io/tutorials/002_creating_an_application/
+const Projector = ProjectorMixin(Panel);
+const projector = new Projector();
+projector.setProperties({
+	inputChannel: listener
+});
 
-registerThemeInjector(theme, registry);
-registry.defineInjector('state', new StateInjector(store));
-
-const projector = new (Projector(DevToolContainer))();
-
-async function onCheckVersion() {
-	try {
-		(setInterfacePropertyProcess(store) as any)('apiVersion', await version());
-	} catch {
-		console.log('Unable to detect Dojo 2 Diagnostic API');
-	}
-	projector.setProperties({ registry, onCheckVersion });
-}
-
-(async () => {
-	await onCheckVersion();
-	projector.append();
-})();
+// By default, append() will attach the rendered content to document.body.  To insert this application
+// into existing HTML content, pass the desired root node to append().
+projector.append();
