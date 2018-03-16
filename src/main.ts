@@ -1,19 +1,23 @@
 import { ChromeExtensionInputChannel } from '@dojo/diagnostics/channels/input/ChromeExtensionInputChannel';
+import Injector from '@dojo/widget-core/Injector';
+import { registerThemeInjector } from '@dojo/widget-core/main';
 import { ProjectorMixin } from '@dojo/widget-core/mixins/Projector';
+import Registry from '@dojo/widget-core/Registry';
 import Panel from './widgets/Panel';
+import dojo from '@dojo/themes/dojo';
 
-// listen for events from the chrome background page
+const registry = new Registry();
+
+const themeContext = registerThemeInjector(dojo, registry);
+registry.defineInjector('theme-context', new Injector(themeContext));
+
 const listener = new ChromeExtensionInputChannel();
+registry.defineInjector('input-channel', new Injector(listener));
 
-// Create a projector to convert the virtual DOM produced by the application into the rendered page.
-// For more information on starting up a Dojo 2 application, take a look at
-// https://dojo.io/tutorials/002_creating_an_application/
 const Projector = ProjectorMixin(Panel);
 const projector = new Projector();
 projector.setProperties({
-	inputChannel: listener
+	registry: registry
 });
 
-// By default, append() will attach the rendered content to document.body.  To insert this application
-// into existing HTML content, pass the desired root node to append().
 projector.append();

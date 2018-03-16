@@ -1,30 +1,46 @@
 import { DiagnosticChannelMessage, DiagnosticInputChannel } from '@dojo/diagnostics/interfaces';
-import { Subscription } from '@dojo/shim/Observable';
 import { v } from '@dojo/widget-core/d';
+import { theme } from '@dojo/widget-core/main';
+import { I18nMixin, I18nProperties } from '@dojo/widget-core/mixins/I18n';
+import { ThemedMixin, ThemedProperties } from '@dojo/widget-core/mixins/Themed';
 import { WidgetBase } from '@dojo/widget-core/WidgetBase';
+import { handleFromSubscription } from '../../utils/handles';
+import * as css from '../styles/tools/log.m.css';
 
-export interface LogProperties {
+export interface LogProperties extends ThemedProperties, I18nProperties {
 	inputChannel: DiagnosticInputChannel;
 }
 
-export class Panel extends WidgetBase<LogProperties> {
+export const LogBase = I18nMixin(ThemedMixin(WidgetBase));
+
+@theme(css)
+export class Log extends LogBase<LogProperties> {
 	messages: DiagnosticChannelMessage[] = [];
-	subscription: Subscription;
+	private initialized = false;
 
 	constructor() {
 		super();
 	}
 
 	protected render() {
-		if (!this.subscription) {
-			this.subscription = this.properties.inputChannel.listen().subscribe((message) => {
-				this.messages.push(message);
-				this.invalidate();
-			});
+		if (!this.initialized) {
+			this.initialized = true;
+			this.own(
+				handleFromSubscription(
+					this.properties.inputChannel.listen().subscribe((message) => {
+						this.messages.push(message);
+						this.invalidate();
+					})
+				)
+			);
 		}
 
-		return v('div', {}, this.messages.map((message) => v('div', {}, [message.eventId])));
+		return v(
+			'div',
+			{ classes: this.theme(css.logContainer) },
+			this.messages.map((message) => v('div', {}, [message.eventId]))
+		);
 	}
 }
 
-export default Panel;
+export default Log;

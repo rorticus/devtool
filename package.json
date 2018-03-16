@@ -6,7 +6,8 @@
     "build:app": "dojo build",
     "build:ts": "tsc -p .",
     "build:chrome": "copyfiles -u 4 -e \"*.ts\" _build/src/clients/chrome/* output/dist && copyfiles -e \"*.ts\" -u 3 src/clients/chrome/* output/dist",
-    "build": "npm run build:clean && npm run build:app && npm run build:ts && npm run build:chrome"
+    "build": "npm run build:clean && npm run build:app && npm run build:ts && npm run build:chrome",
+    "prettier": "prettier --write 'src/**/*.ts' 'tests/**/*.ts'"
   },
   "dependencies": {
     "@dojo/core": "~0.3.1",
@@ -14,22 +15,34 @@
     "@dojo/i18n": "~0.4.1",
     "@dojo/routing": "~0.4.1",
     "@dojo/shim": "~0.2.4",
+    "@dojo/stores": "^0.4.1",
+    "@dojo/themes": "^0.6.1",
     "@dojo/widgets": "^0.5.1",
     "tslib": "~1.8.1"
   },
   "devDependencies": {
-    "@dojo/cli-build-app": "~0.1.1",
+    "@dojo/cli-build-app": "^0.3.4",
     "@dojo/cli-test-intern": "~0.4.0",
     "@dojo/loader": "~0.1.1",
     "@dojo/test-extras": "~0.4.1",
-    "@dojo/widget-core": "^0.9.5",
+    "@dojo/widget-core": "^0.9.6",
     "@types/glob": "~5.0.0",
     "@types/grunt": "~0.4.0",
     "@types/node": "^6.0.46",
     "@types/sinon": "^1.16.35",
     "copyfiles": "^2.0.0",
     "intern": "~4.1.5",
+    "prettier": "^1.9.2",
     "sinon": "^2.0.0",
+    "tslint-plugin-prettier": "^1.3.0",
     "typescript": "~2.6.1"
+  },
+  "prettier": {
+    "singleQuote": true,
+    "tabWidth": 4,
+    "useTabs": true,
+    "parser": "typescript",
+    "printWidth": 120,
+    "arrowParens": "always"
   }
 }

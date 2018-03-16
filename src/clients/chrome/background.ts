@@ -21,8 +21,7 @@ chrome.runtime.onConnect.addListener((port: any) => {
 				incomingMessage(tabId, message.message);
 			}
 		});
-	}
-	else if (port.name === 'devtools') {
+	} else if (port.name === 'devtools') {
 		console.log('incoming connection from devtools');
 
 		port.onMessage.addListener((message: any, sender: any) => {
@@ -34,8 +33,7 @@ chrome.runtime.onConnect.addListener((port: any) => {
 				initializeTab(tabId);
 			}
 		});
-	}
-	else if (port.name === 'diagnostics') {
+	} else if (port.name === 'diagnostics') {
 		console.log('incoming connection from diagnostics');
 
 		port.onMessage.addListener((event: any) => {

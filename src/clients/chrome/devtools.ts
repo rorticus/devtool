@@ -17,10 +17,11 @@ backgroundPort.postMessage({
 	tabId
 });
 
-chrome.devtools.panels.create('Dojo',
+chrome.devtools.panels.create(
+	'Dojo',
 	'', // icon goes here
 	'index.html',
-	function (panel: any) {
+	function(panel: any) {
 		// code invoked on panel creation
 	}
 );
